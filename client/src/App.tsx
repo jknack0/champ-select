@@ -1,5 +1,5 @@
-﻿import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
-import { ChampSelect, ChampSelectAdmin, Overlay, Login, Signup } from './components/pages'
+import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
+import { ChampSelect, ChampSelectAdmin, Settings, Overlay, Login, Signup } from './components/pages'
 import ProtectedRoute from './components/routes/ProtectedRoute'
 import './App.css'
 import { useAuth } from './context/AuthContext'
@@ -41,6 +41,14 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/overlay" element={<Overlay />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
@@ -53,6 +61,8 @@ const App = () => {
 }
 
 export default App
+
+
 
 
 

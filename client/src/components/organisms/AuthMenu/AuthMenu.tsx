@@ -1,4 +1,4 @@
-﻿import { useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../context/AuthContext'
 import { IconButton } from '../../atoms'
@@ -33,6 +33,9 @@ const AuthMenu = () => {
                 <div className={styles.email}>{user.email}</div>
               </div>
             </div>
+            <NavLink className={styles.item} to="/settings" onClick={close} role="menuitem">
+              Settings
+            </NavLink>
             <button className={styles.item} onClick={handleLogout} role="menuitem">
               Logout
             </button>
@@ -53,3 +56,4 @@ const AuthMenu = () => {
 }
 
 export default AuthMenu
+

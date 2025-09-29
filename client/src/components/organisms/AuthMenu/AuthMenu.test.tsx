@@ -5,7 +5,6 @@ import { MemoryRouter } from 'react-router-dom'
 
 const navigateMock = vi.fn()
 
-// Mock useNavigate to avoid actual navigation
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
   return {
@@ -14,7 +13,6 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
-// Mock the auth context used by AuthMenu
 vi.mock('../../../context/AuthContext', () => {
   return {
     useAuth: vi.fn(),
@@ -53,7 +51,6 @@ describe('AuthMenu', () => {
       </MemoryRouter>,
     )
 
-    // open menu via icon button
     const button = screen.getByRole('button', { name: /account menu/i })
     await user.click(button)
 
@@ -61,7 +58,7 @@ describe('AuthMenu', () => {
     expect(screen.getByRole('menuitem', { name: /sign up/i })).toBeInTheDocument()
   })
 
-  it('shows Logout when user is authenticated and triggers logout', async () => {
+  it('shows Settings and Logout when user is authenticated and triggers logout', async () => {
     const logout = vi.fn().mockResolvedValue(undefined)
     mockedUseAuth.mockReturnValue(
       createAuthValue({ user: { id: 1, email: 'a@b.com' }, logout })
@@ -76,6 +73,8 @@ describe('AuthMenu', () => {
 
     const button = screen.getByRole('button', { name: /account menu/i })
     await user.click(button)
+
+    expect(screen.getByRole('menuitem', { name: /settings/i })).toBeInTheDocument()
 
     const logoutBtn = screen.getByRole('menuitem', { name: /logout/i })
     await user.click(logoutBtn)
