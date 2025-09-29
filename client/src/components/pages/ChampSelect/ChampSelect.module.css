@@ -1,25 +1,146 @@
-﻿.pageContainer {
+.page {
+  min-height: 100vh;
+  background: #f3f4f6;
+  padding: 32px 16px;
+}
+
+.container {
   width: 100%;
-  max-width: 768px;
+  max-width: 900px;
   margin: 0 auto;
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
 }
 
-.pageHeading {
-  margin-bottom: 1rem;
-  font-size: 2rem;
-  color: #102a43;
+.template {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.pageCopy {
-  margin-bottom: 0.75rem;
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pageTitle {
+  margin: 0;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.body {
+  margin: 0;
+  color: #475569;
   line-height: 1.6;
-  color: #334e68;
 }
 
-.pageCopy:last-of-type {
-  margin-bottom: 0;
+.bodyMuted {
+  color: #64748b;
+}
+
+.donationCard {
+  padding: 0;
+}
+
+.donation {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+.donationMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.donationHeader {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.donationPrefill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.donationAction {
+  display: flex;
+  align-items: center;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.badgeDefault {
+  background: #e2e8f0;
+  color: #1f2937;
+}
+
+.badgeInfo {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
+}
+
+.championList {
+  padding: 0;
+}
+
+.championListItems {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.championListItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.championListItem:last-child {
+  border-bottom: none;
+}
+
+.championDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.championName {
+  margin: 0;
+  color: #0f172a;
+}
+
+.championId {
+  color: #64748b;
+}
+
+@media (min-width: 640px) {
+  .donation {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .donationMeta {
+    max-width: 70%;
+  }
 }
