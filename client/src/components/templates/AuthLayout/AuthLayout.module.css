@@ -1,0 +1,22 @@
+﻿.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.container {
+  width: 100%;
+  max-width: 420px;
+  min-width: 420px;
+  margin: 0 auto;
+  transform: translateY(-8vh); /* lift slightly above center */
+}
+
+/* Avoid overflow and excessive lift on very small screens */
+@media (max-width: 480px) {
+  .container {
+    min-width: 0;
+    transform: none;
+  }
+}

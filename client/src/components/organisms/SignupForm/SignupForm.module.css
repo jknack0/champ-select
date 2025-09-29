@@ -1,0 +1,2 @@
+﻿.form { display: flex; flex-direction: column; gap: 1rem; }
+.error { color: #d64545; font-size: 0.9rem; text-align: center; }

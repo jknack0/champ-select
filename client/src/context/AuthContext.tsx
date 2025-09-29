@@ -63,7 +63,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(data)
   }, [])
 
-  const logout = useCallback(async () => {\n    try {\n      await apiFetch<void>('/auth/logout', { method: 'POST' })\n    } catch (error) {\n      // ignore logout errors\n    } finally {\n      setUser(null)\n    }\n  }, [])
+  const logout = useCallback(async () => {
+  try {
+    await apiFetch<void>('/auth/logout', { method: 'POST' })
+  } catch (error) {
+    // ignore logout errors
+  } finally {
+    setUser(null)
+  }
+}, [])
 
   const value = useMemo(
     () => ({
@@ -86,5 +94,8 @@ export const useAuth = () => {
   }
   return context
 }
+
+
+
 
 
