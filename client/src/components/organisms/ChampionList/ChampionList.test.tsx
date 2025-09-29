@@ -2,7 +2,7 @@
 import userEvent from '@testing-library/user-event'
 import type { DropResult } from '@hello-pangea/dnd'
 import ChampionList from './ChampionList'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 let capturedDragEnd: ((result: DropResult) => void) | null = null
 
@@ -76,6 +76,7 @@ describe('ChampionList', () => {
     expect(handleReorder).toHaveBeenCalledWith(0, 1)
   })
 })
+
 
 
 

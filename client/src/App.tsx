@@ -1,30 +1,66 @@
 ﻿import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
-import { ChampSelect, ChampSelectAdmin, Overlay } from './components/pages'
+import { ChampSelect, ChampSelectAdmin, Overlay, Login, Signup } from './components/pages'
+import ProtectedRoute from './components/routes/ProtectedRoute'
+import { useAuth } from './context/AuthContext'
 import './App.css'
 
 const App = () => {
+  const { user, logout } = useAuth()
+
   return (
     <div className="app">
       <nav className="nav">
-        <NavLink to="/champ-select" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
-          Champ Select
-        </NavLink>
-        <NavLink
-          to="/champ-select-admin"
-          className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-        >
-          Champ Select Admin
-        </NavLink>
-        <NavLink to="/overlay" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
-          Overlay
-        </NavLink>
+        <div className="nav-inner">
+          <div className="nav-links">
+            <NavLink to="/champ-select" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+              Champ Select
+            </NavLink>
+            <NavLink
+              to="/champ-select-admin"
+              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+            >
+              Champ Select Admin
+            </NavLink>
+            <NavLink to="/overlay" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+              Overlay
+            </NavLink>
+          </div>
+          <div className="nav-actions">
+            {user ? (
+              <>
+                <span className="nav-user">{user.email}</span>
+                <button className="nav-logout" type="button" onClick={logout}>
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <NavLink to="/login" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+                  Login
+                </NavLink>
+                <NavLink to="/signup" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+                  Sign Up
+                </NavLink>
+              </>
+            )}
+          </div>
+        </div>
       </nav>
 
       <main className="main">
         <Routes>
           <Route path="/champ-select" element={<ChampSelect />} />
-          <Route path="/champ-select-admin" element={<ChampSelectAdmin />} />
+          <Route
+            path="/champ-select-admin"
+            element={
+              <ProtectedRoute>
+                <ChampSelectAdmin />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/overlay" element={<Overlay />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
           <Route path="/" element={<Navigate to="/champ-select" replace />} />
           <Route path="*" element={<Navigate to="/champ-select" replace />} />
         </Routes>

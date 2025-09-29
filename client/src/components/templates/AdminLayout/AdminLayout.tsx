@@ -9,7 +9,7 @@ type AdminLayoutProps = {
 
 const AdminLayout = ({ header, donation, championList }: AdminLayoutProps) => (
   <div className={styles.page}>
-    <div className={[styles.container, styles.layout].join(' ')}>
+    <div className={styles.container}>
       {header}
       {donation}
       {championList}

@@ -17,3 +17,5 @@ yarn-error.log*
 # IDE
 .vscode/
 .DS_Store
+database.sqlite
+api/node_modules/
