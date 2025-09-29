@@ -1,34 +1,35 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+﻿import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
+import { ChampSelect, ChampSelectAdmin, Overlay } from './components/pages'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+const App = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="app">
+      <nav className="nav">
+        <NavLink to="/champ-select" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+          Champ Select
+        </NavLink>
+        <NavLink
+          to="/champ-select-admin"
+          className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+        >
+          Champ Select Admin
+        </NavLink>
+        <NavLink to="/overlay" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+          Overlay
+        </NavLink>
+      </nav>
+
+      <main className="main">
+        <Routes>
+          <Route path="/champ-select" element={<ChampSelect />} />
+          <Route path="/champ-select-admin" element={<ChampSelectAdmin />} />
+          <Route path="/overlay" element={<Overlay />} />
+          <Route path="/" element={<Navigate to="/champ-select" replace />} />
+          <Route path="*" element={<Navigate to="/champ-select" replace />} />
+        </Routes>
+      </main>
+    </div>
   )
 }
 

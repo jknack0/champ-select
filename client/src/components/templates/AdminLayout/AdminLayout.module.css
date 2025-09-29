@@ -1,0 +1,27 @@
+﻿:global(:root) {
+  color-scheme: light;
+}
+
+.page {
+  min-height: 100vh;
+  margin: 0;
+  padding: 32px 16px 48px;
+  background: #f5f7fa;
+  display: flex;
+  justify-content: center;
+  color: #102a43;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.container {
+  width: min(860px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}

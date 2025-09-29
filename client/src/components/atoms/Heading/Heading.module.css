@@ -1,0 +1,17 @@
+﻿.heading {
+  margin: 0 0 16px;
+  color: #0b1f33;
+}
+
+.headingH1 {
+  font-size: 1.875rem;
+  letter-spacing: -0.01em;
+}
+
+.headingH2 {
+  font-size: 1.5rem;
+}
+
+.headingH3 {
+  font-size: 1.25rem;
+}
