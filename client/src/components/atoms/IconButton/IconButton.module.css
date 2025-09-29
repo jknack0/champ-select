@@ -1,4 +1,6 @@
 ﻿.button {
+  padding: 0;
+  line-height: 0;
   background: transparent;
   border: none;
   color: #9aa5b1;
@@ -21,3 +23,4 @@
   outline: 3px solid rgba(214, 69, 69, 0.3);
   outline-offset: 1px;
 }
+

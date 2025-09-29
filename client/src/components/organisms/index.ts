@@ -7,3 +7,6 @@ export { default as AuthCard } from './AuthCard';
 
 export { default as SignupForm } from './SignupForm';
 
+
+export { default as AuthMenu } from './AuthMenu';
+

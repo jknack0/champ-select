@@ -1,49 +1,32 @@
 ﻿import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
 import { ChampSelect, ChampSelectAdmin, Overlay, Login, Signup } from './components/pages'
 import ProtectedRoute from './components/routes/ProtectedRoute'
-import { useAuth } from './context/AuthContext'
 import './App.css'
+import { useAuth } from './context/AuthContext'
+import { AuthMenu } from './components/organisms'
 
 const App = () => {
-  const { user, logout } = useAuth()
-
+  const { user } = useAuth()
   return (
     <div className="app">
       <nav className="nav">
         <div className="nav-inner">
           <div className="nav-links">
-            <NavLink to="/champ-select" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
-              Champ Select
-            </NavLink>
-            <NavLink
-              to="/champ-select-admin"
-              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-            >
-              Champ Select Admin
-            </NavLink>
-            <NavLink to="/overlay" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
-              Overlay
-            </NavLink>
-          </div>
-          <div className="nav-actions">
-            {user ? (
-              <>
-                <span className="nav-user">{user.email}</span>
-                <button className="nav-logout" type="button" onClick={logout}>
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <NavLink to="/login" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
-                  Login
-                </NavLink>
-                <NavLink to="/signup" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
-                  Sign Up
-                </NavLink>
-              </>
-            )}
-          </div>
+  <NavLink to="/champ-select" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+    Champ Select
+  </NavLink>
+  {user && (
+    <>
+      <NavLink to="/champ-select-admin" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+        Champ Select Admin
+      </NavLink>
+      <NavLink to="/overlay" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+        Overlay
+      </NavLink>
+    </>
+  )}
+</div>
+          <div className="nav-actions"><AuthMenu /></div>
         </div>
       </nav>
 
@@ -70,3 +53,9 @@ const App = () => {
 }
 
 export default App
+
+
+
+
+
+

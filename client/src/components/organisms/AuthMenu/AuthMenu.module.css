@@ -1,0 +1,7 @@
+﻿.wrapper { position: relative; }
+.menu { display: flex; flex-direction: column; gap: 4px; }
+.header { display: flex; align-items: center; gap: 10px; padding: 4px 6px 6px; border-bottom: 1px solid #e6edf5; margin-bottom: 6px; }
+.meta { display: flex; flex-direction: column; }
+.email { font-size: 0.9rem; color: #334e68; }
+.item { display: block; width: 100%; text-align: left; padding: 8px 10px; border-radius: 8px; text-decoration: none; color: #102a43; background: transparent; border: none; cursor: pointer; }
+.item:hover { background: #f0f4f8; }

@@ -4,3 +4,6 @@ export { default as ChampionRow } from './ChampionRow'
 export { default as FormField } from './FormField';
 export { default as AuthActions } from './AuthActions';
 
+
+export { default as Popover } from './Popover';
+
