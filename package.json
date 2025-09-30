@@ -7,7 +7,8 @@
     "dev:api": "npm run dev --prefix api",
     "dev:client": "npm run dev --prefix client",
     "build": "npm run build --prefix api && npm run build --prefix client",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install:all": "concurrently \"npm install\" \"npm install --prefix api\" \"npm install --prefix client\""
   },
   "keywords": [],
   "author": "",

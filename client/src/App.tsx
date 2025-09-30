@@ -1,4 +1,4 @@
-import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
+﻿import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { ChampSelect, ChampSelectAdmin, Settings, Overlay, Login, Signup } from './components/pages'
 import ProtectedRoute from './components/routes/ProtectedRoute'
 import './App.css'
@@ -7,32 +7,42 @@ import { AuthMenu } from './components/organisms'
 
 const App = () => {
   const { user } = useAuth()
+  const location = useLocation()
+  const isViewerRoute = /^\/champ-select(?:\/|$)/.test(location.pathname)
+
   return (
     <div className="app">
-      <nav className="nav">
-        <div className="nav-inner">
-          <div className="nav-links">
-  <NavLink to="/champ-select" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
-    Champ Select
-  </NavLink>
-  {user && (
-    <>
-      <NavLink to="/champ-select-admin" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
-        Champ Select Admin
-      </NavLink>
-      <NavLink to="/overlay" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
-        Overlay
-      </NavLink>
-    </>
-  )}
-</div>
-          <div className="nav-actions"><AuthMenu /></div>
-        </div>
-      </nav>
+      {!isViewerRoute ? (
+        <nav className="nav">
+          <div className="nav-inner">
+            <div className="nav-links">
+              {user ? (
+                <>
+                  <NavLink
+                    to="/champ-select-admin"
+                    className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  >
+                    Champ Select Admin
+                  </NavLink>
+                  <NavLink
+                    to="/overlay"
+                    className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  >
+                    Overlay
+                  </NavLink>
+                </>
+              ) : null}
+            </div>
+            <div className="nav-actions">
+              <AuthMenu />
+            </div>
+          </div>
+        </nav>
+      ) : null}
 
       <main className="main">
         <Routes>
-          <Route path="/champ-select" element={<ChampSelect />} />
+          <Route path="/champ-select/:ownerId?" element={<ChampSelect />} />
           <Route
             path="/champ-select-admin"
             element={
@@ -61,11 +71,3 @@ const App = () => {
 }
 
 export default App
-
-
-
-
-
-
-
-

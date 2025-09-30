@@ -1,12 +1,19 @@
-﻿import { render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import userEvent from '@testing-library/user-event'
 import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd'
 import ChampionRow from './ChampionRow'
 
-describe('ChampionRow', () => {
-  const champ = { id: 'ahri', name: 'Ahri', img: '/ahri.png' }
+const champ = {
+  id: 'ahri',
+  name: 'Ahri',
+  imageUrl: '/ahri.png',
+  role: null,
+  tags: [],
+  isActive: true,
+}
 
+describe('ChampionRow', () => {
   it('renders champion info and remove button', () => {
     render(<ChampionRow champ={champ} onRemove={() => {}} dragHandleProps={null} />)
 
@@ -35,9 +42,3 @@ describe('ChampionRow', () => {
     expect(handleRemove).toHaveBeenCalledWith('ahri')
   })
 })
-
-
-
-
-
-

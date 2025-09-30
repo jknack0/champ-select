@@ -1,72 +1,112 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Settings from './Settings'
+import {
+  fetchDonationSettings,
+  upsertDonationSettings,
+  fetchStreamlabsStatus,
+  upsertStreamlabsCredentials,
+  deleteStreamlabsCredentials,
+} from '../../../lib/endpoints'
 
-const STORAGE_KEYS = {
-  streamlabsUrl: 'champ-select-admin:streamlabsUrl',
-  streamlabsToken: 'champ-select-admin:streamlabsToken',
-} as const
+vi.mock('../../../lib/endpoints', () => ({
+  fetchDonationSettings: vi.fn(),
+  upsertDonationSettings: vi.fn(),
+  fetchStreamlabsStatus: vi.fn(),
+  upsertStreamlabsCredentials: vi.fn(),
+  deleteStreamlabsCredentials: vi.fn(),
+}))
+
+const fetchDonationSettingsMock = vi.mocked(fetchDonationSettings)
+const upsertDonationSettingsMock = vi.mocked(upsertDonationSettings)
+const fetchStreamlabsStatusMock = vi.mocked(fetchStreamlabsStatus)
+const upsertStreamlabsCredentialsMock = vi.mocked(upsertStreamlabsCredentials)
+const deleteStreamlabsCredentialsMock = vi.mocked(deleteStreamlabsCredentials)
 
 describe('Settings page', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-    window.localStorage.clear()
-  })
-
-  it('prefills values from localStorage', () => {
-    vi.spyOn(Storage.prototype, 'getItem').mockImplementation((key: string) => {
-      if (key === STORAGE_KEYS.streamlabsUrl) {
-        return 'https://streamlabs.com/my-channel/tip'
-      }
-      if (key === STORAGE_KEYS.streamlabsToken) {
-        return 'abc123'
-      }
-      return null
+  beforeEach(() => {
+    vi.clearAllMocks()
+    fetchDonationSettingsMock.mockResolvedValue({ streamlabsUrl: null, defaultAmount: null, currency: 'USD' })
+    fetchStreamlabsStatusMock.mockResolvedValue({ hasCredentials: false, tokenExpiresAt: null })
+    upsertDonationSettingsMock.mockResolvedValue({
+      streamlabsUrl: 'https://streamlabs.com/my-channel/tip',
+      defaultAmount: null,
+      currency: 'USD',
     })
-
-    render(<Settings />)
-
-    expect(screen.getByLabelText(/streamlabs url/i)).toHaveValue('https://streamlabs.com/my-channel/tip')
-    expect(screen.getByLabelText(/streamlabs token/i)).toHaveValue('abc123')
+    upsertStreamlabsCredentialsMock.mockResolvedValue({ hasCredentials: true, tokenExpiresAt: null })
+    deleteStreamlabsCredentialsMock.mockResolvedValue(undefined)
   })
 
-  it('validates inputs and persists settings', async () => {
-    const user = userEvent.setup()
-    const getItem = vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('')
-    const setItem = vi.spyOn(Storage.prototype, 'setItem')
+  it('prefills existing settings from the API', async () => {
+    fetchDonationSettingsMock.mockResolvedValueOnce({
+      streamlabsUrl: 'https://streamlabs.com/my-channel/tip',
+      defaultAmount: 12.5,
+      currency: 'USD',
+    })
+    fetchStreamlabsStatusMock.mockResolvedValueOnce({ hasCredentials: true, tokenExpiresAt: null })
 
     render(<Settings />)
 
-    const urlInput = screen.getByLabelText(/streamlabs url/i)
+    const urlInput = await screen.findByLabelText(/streamlabs url/i)
+    expect(urlInput).toHaveValue('https://streamlabs.com/my-channel/tip')
+
+    const tokenInput = screen.getByLabelText(/streamlabs token/i)
+    expect(tokenInput).toHaveValue('')
+    expect(screen.getByText(/token is already saved/i)).toBeInTheDocument()
+  })
+
+  it('validates inputs and saves settings', async () => {
+    const user = userEvent.setup()
+
+    render(<Settings />)
+
+    const urlInput = await screen.findByLabelText(/streamlabs url/i)
     const tokenInput = screen.getByLabelText(/streamlabs token/i)
     const saveButton = screen.getByRole('button', { name: /save settings/i })
 
     await user.clear(urlInput)
     await user.type(urlInput, 'https://streamlabs.com/my-channel/tip')
-    await user.clear(tokenInput)
     await user.type(tokenInput, 'token-123')
 
     await user.click(saveButton)
 
-    expect(setItem).toHaveBeenCalledWith(STORAGE_KEYS.streamlabsUrl, 'https://streamlabs.com/my-channel/tip')
-    expect(setItem).toHaveBeenCalledWith(STORAGE_KEYS.streamlabsToken, 'token-123')
-    expect(screen.getByText(/settings saved/i)).toBeInTheDocument()
-    expect(getItem).toHaveBeenCalled()
+    await waitFor(() => {
+      expect(upsertDonationSettingsMock).toHaveBeenCalledWith({
+        streamlabsUrl: 'https://streamlabs.com/my-channel/tip',
+        defaultAmount: null,
+        currency: 'USD',
+      })
+      expect(upsertStreamlabsCredentialsMock).toHaveBeenCalledWith({ accessToken: 'token-123' })
+      expect(screen.getByText(/settings saved/i)).toBeInTheDocument()
+    })
   })
 
-  it('shows validation errors for invalid input', async () => {
+  it('shows validation errors for missing fields', async () => {
     const user = userEvent.setup()
-    vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('')
-    const setItem = vi.spyOn(Storage.prototype, 'setItem')
 
     render(<Settings />)
 
-    const saveButton = screen.getByRole('button', { name: /save settings/i })
+    const saveButton = await screen.findByRole('button', { name: /save settings/i })
     await user.click(saveButton)
 
     expect(screen.getByText(/streamlabs url is required/i)).toBeInTheDocument()
     expect(screen.getByText(/streamlabs token is required/i)).toBeInTheDocument()
-    expect(setItem).not.toHaveBeenCalled()
+    expect(upsertDonationSettingsMock).not.toHaveBeenCalled()
+    expect(upsertStreamlabsCredentialsMock).not.toHaveBeenCalled()
+  })
+
+  it('allows removing stored credentials', async () => {
+    const user = userEvent.setup()
+    fetchStreamlabsStatusMock.mockResolvedValueOnce({ hasCredentials: true, tokenExpiresAt: null })
+
+    render(<Settings />)
+
+    const removeButton = await screen.findByRole('button', { name: /remove token/i })
+    await user.click(removeButton)
+
+    expect(deleteStreamlabsCredentialsMock).toHaveBeenCalled()
   })
 })
+
+

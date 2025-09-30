@@ -1,90 +1,166 @@
-import { render, screen } from '@testing-library/react'
+﻿import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ChampSelect from './ChampSelect'
+import type { PublicRosterResponse } from '../../../lib/endpoints'
 
-const STORAGE_KEYS = {
-  champions: 'champ-select-admin:champions',
-  donationAmount: 'champ-select-admin:donationAmount',
-} as const
+vi.mock('../../../lib/endpoints', () => ({
+  fetchPublicRoster: vi.fn(),
+}))
 
-const renderPage = () => render(<ChampSelect />)
+const socketMock = {
+  on: vi.fn(),
+  off: vi.fn(),
+}
+
+vi.mock('../../../lib/realtime', () => ({
+  getRealtimeSocket: vi.fn(() => socketMock),
+}))
+
+import { fetchPublicRoster } from '../../../lib/endpoints'
+import { getRealtimeSocket } from '../../../lib/realtime'
+
+const fetchPublicRosterMock = vi.mocked(fetchPublicRoster)
+const getRealtimeSocketMock = vi.mocked(getRealtimeSocket)
+
+const baseRosterResponse = (): PublicRosterResponse => ({
+  roster: {
+    id: 1,
+    name: 'Stream Default',
+    isPublic: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  champions: [
+    {
+      id: 'ahri',
+      name: 'Ahri',
+      imageUrl: 'https://example.com/ahri.png',
+      role: null,
+      tags: [],
+      isActive: true,
+      position: 0,
+    },
+    {
+      id: 'leesin',
+      name: 'Lee Sin',
+      imageUrl: 'https://example.com/leesin.png',
+      role: null,
+      tags: [],
+      isActive: true,
+      position: 1,
+    },
+  ],
+  donationSettings: null,
+})
+
+const renderPage = (initialEntry = '/champ-select') =>
+  render(
+    <MemoryRouter initialEntries={[initialEntry]}>
+      <Routes>
+        <Route path="/champ-select/:ownerId?" element={<ChampSelect />} />
+      </Routes>
+    </MemoryRouter>,
+  )
 
 describe('ChampSelect page', () => {
-  let getItemSpy: ReturnType<typeof vi.spyOn>
   let openSpy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
-    getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => null)
-    openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
+    fetchPublicRosterMock.mockReset()
+    socketMock.on.mockReset()
+    socketMock.off.mockReset()
+    getRealtimeSocketMock.mockClear()
+    openSpy = vi.spyOn(window, 'open') as ReturnType<typeof vi.spyOn>
+    openSpy.mockImplementation(() => null)
   })
 
   afterEach(() => {
-    window.localStorage.clear()
-    vi.restoreAllMocks()
+    openSpy.mockRestore()
   })
 
-  it('renders default champions and donate button when storage is empty', () => {
+  it('renders champions and default donate button when no amount is set', async () => {
+    fetchPublicRosterMock.mockResolvedValueOnce(baseRosterResponse())
+
     renderPage()
 
-    expect(screen.getByRole('heading', { level: 1, name: /champ select/i })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(fetchPublicRosterMock).toHaveBeenCalledWith(undefined)
+    })
+
+    const heading = await screen.findByRole('heading', { level: 1, name: /champ select/i })
+    expect(heading).toBeInTheDocument()
 
     const donateBtn = screen.getByRole('button', { name: /donate to the stream/i })
     expect(donateBtn).toHaveTextContent('Donate')
     expect(screen.queryByText(/prefilled amount/i)).not.toBeInTheDocument()
 
     const champions = screen.getAllByRole('listitem')
-    expect(champions.length).toBeGreaterThan(0)
+    expect(champions).toHaveLength(2)
     expect(screen.getByText('Ahri')).toBeInTheDocument()
+    expect(screen.getByText('Lee Sin')).toBeInTheDocument()
   })
 
   it('shows formatted donation amount and opens a prefilled link when clicked', async () => {
-    const user = userEvent.setup()
-    const champions = [
-      { id: 'ezreal', name: 'Ezreal', img: 'ezreal.png' },
-      { id: 'lux', name: 'Lux', img: 'lux.png' },
-    ]
+    const response = baseRosterResponse()
+    response.donationSettings = {
+      streamlabsUrl: 'https://streamlabs.com/my-channel/tip',
+      defaultAmount: 12.5,
+      currency: 'USD',
+    }
+    fetchPublicRosterMock.mockResolvedValueOnce(response)
 
-    getItemSpy.mockImplementation((key: string) => {
-      if (key === STORAGE_KEYS.donationAmount) {
-        return '12.5'
-      }
-      if (key === STORAGE_KEYS.champions) {
-        return JSON.stringify(champions)
-      }
-      return null
-    })
+    const user = userEvent.setup()
 
     renderPage()
 
-    const donateBtn = screen.getByRole('button', { name: /donate \$12\.50/i })
+    const donateBtn = await screen.findByRole('button', { name: /donate \$12\.50/i })
     expect(donateBtn).toHaveTextContent('Donate $12.50')
     expect(screen.getByText(/prefilled amount/i)).toBeInTheDocument()
-
-    expect(screen.getAllByRole('listitem')).toHaveLength(champions.length)
-    expect(screen.getByText('Ezreal')).toBeInTheDocument()
 
     await user.click(donateBtn)
 
     expect(openSpy).toHaveBeenCalledWith(
-      'https://streamlabs.com/<your-channel>/tip?amount=12.5',
+      'https://streamlabs.com/my-channel/tip?amount=12.5',
       '_blank',
       'noopener,noreferrer',
     )
   })
 
-  it('ignores invalid donation amounts and falls back to default label', () => {
-    getItemSpy.mockImplementation((key: string) => {
-      if (key === STORAGE_KEYS.donationAmount) {
-        return '-5'
-      }
-      return null
-    })
+  it('falls back to generic donate label when amount is invalid', async () => {
+    const response = baseRosterResponse()
+    response.donationSettings = {
+      streamlabsUrl: 'https://streamlabs.com/my-channel/tip',
+      defaultAmount: null,
+      currency: 'USD',
+    }
+    fetchPublicRosterMock.mockResolvedValueOnce(response)
 
     renderPage()
 
-    const donateBtn = screen.getByRole('button', { name: /donate to the stream/i })
+    const donateBtn = await screen.findByRole('button', { name: /donate to the stream/i })
     expect(donateBtn).toHaveTextContent('Donate')
     expect(screen.queryByText(/prefilled amount/i)).not.toBeInTheDocument()
+  })
+
+  it('shows an error message when the roster request fails', async () => {
+    fetchPublicRosterMock.mockRejectedValueOnce(new Error('No roster found'))
+
+    renderPage()
+
+    await waitFor(() => {
+      expect(screen.getByText('No roster found')).toBeInTheDocument()
+    })
+  })
+
+  it('requests a specific roster when an owner id is present in the path', async () => {
+    fetchPublicRosterMock.mockResolvedValueOnce(baseRosterResponse())
+
+    renderPage('/champ-select/42')
+
+    await waitFor(() => {
+      expect(fetchPublicRosterMock).toHaveBeenCalledWith('42')
+    })
   })
 })

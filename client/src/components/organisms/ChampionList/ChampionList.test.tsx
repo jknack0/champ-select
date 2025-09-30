@@ -1,4 +1,4 @@
-﻿import { render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { DropResult } from '@hello-pangea/dnd'
 import ChampionList from './ChampionList'
@@ -27,14 +27,14 @@ vi.mock('@hello-pangea/dnd', () => ({
       dragHandleProps: { 'data-drag-handle': draggableId },
     }
     const snapshot = { isDragging: false }
-    return <div data-testid={'draggable-' + draggableId}>{children(provided, snapshot)}</div>
+    return <div data-testid={`draggable-${draggableId}`}>{children(provided, snapshot)}</div>
   },
 }))
 
 describe('ChampionList', () => {
   const champs = [
-    { id: 'ahri', name: 'Ahri', img: '/ahri.png' },
-    { id: 'yasuo', name: 'Yasuo', img: '/yasuo.png' },
+    { id: 'ahri', name: 'Ahri', imageUrl: '/ahri.png', role: null, tags: [], isActive: true },
+    { id: 'yasuo', name: 'Yasuo', imageUrl: '/yasuo.png', role: null, tags: [], isActive: true },
   ]
 
   beforeEach(() => {
@@ -76,8 +76,3 @@ describe('ChampionList', () => {
     expect(handleReorder).toHaveBeenCalledWith(0, 1)
   })
 })
-
-
-
-
-

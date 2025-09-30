@@ -1,30 +1,20 @@
-import { FormEvent, useMemo, useState } from 'react'
+import type { FormEvent, ReactNode } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Button, Card, Heading, InlineError, TextInput } from '../../atoms'
 import styles from './Settings.module.css'
+import {
+  fetchDonationSettings,
+  upsertDonationSettings,
+  fetchStreamlabsStatus,
+  upsertStreamlabsCredentials,
+  deleteStreamlabsCredentials,
+  type DonationSettingsDto,
+  type StreamlabsStatusDto,
+} from '../../../lib/endpoints'
 
-const STORAGE_KEYS = {
-  streamlabsUrl: 'champ-select-admin:streamlabsUrl',
-  streamlabsToken: 'champ-select-admin:streamlabsToken',
-} as const
-
-const isBrowser = typeof window !== 'undefined'
-
-const readSetting = (key: string): string => {
-  if (!isBrowser) {
-    return ''
-  }
-  try {
-    return window.localStorage.getItem(key) ?? ''
-  } catch {
-    return ''
-  }
-}
-
-const persistSetting = (key: string, value: string) => {
-  if (!isBrowser) {
-    return
-  }
-  window.localStorage.setItem(key, value)
+type TouchedState = {
+  url?: boolean
+  token?: boolean
 }
 
 const validateUrl = (value: string): string | undefined => {
@@ -51,33 +41,57 @@ const validateToken = (value: string): string | undefined => {
   return undefined
 }
 
-type TouchedState = {
-  url?: boolean
-  token?: boolean
-}
-
-const useSettingsState = () => {
-  const [streamlabsUrl, setStreamlabsUrl] = useState<string>(() => readSetting(STORAGE_KEYS.streamlabsUrl))
-  const [streamlabsToken, setStreamlabsToken] = useState<string>(() => readSetting(STORAGE_KEYS.streamlabsToken))
-  return {
-    streamlabsUrl,
-    setStreamlabsUrl,
-    streamlabsToken,
-    setStreamlabsToken,
-  }
-}
-
 const Settings = () => {
-  const { streamlabsUrl, setStreamlabsUrl, streamlabsToken, setStreamlabsToken } = useSettingsState()
+  const [streamlabsUrl, setStreamlabsUrl] = useState('')
+  const [streamlabsToken, setStreamlabsToken] = useState('')
   const [touched, setTouched] = useState<TouchedState>({})
-  const [status, setStatus] = useState<'idle' | 'saved'>('idle')
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [donationSettings, setDonationSettings] = useState<DonationSettingsDto | null>(null)
+  const [streamlabsStatus, setStreamlabsStatus] = useState<StreamlabsStatusDto | null>(null)
 
-  const errors = useMemo(() => {
-    return {
-      url: touched.url ? validateUrl(streamlabsUrl) : undefined,
-      token: touched.token ? validateToken(streamlabsToken) : undefined,
+  useEffect(() => {
+    let cancelled = false
+
+    const load = async () => {
+      try {
+        const [donation, creds] = await Promise.all([
+          fetchDonationSettings().catch(() => null),
+          fetchStreamlabsStatus().catch(() => null),
+        ])
+
+        if (cancelled) {
+          return
+        }
+
+        if (donation) {
+          setDonationSettings(donation)
+          if (donation.streamlabsUrl) {
+            setStreamlabsUrl(donation.streamlabsUrl)
+          }
+        }
+        if (creds) {
+          setStreamlabsStatus(creds)
+        }
+        setLoadError(null)
+      } catch (error) {
+        if (!cancelled) {
+          setLoadError(error instanceof Error ? error.message : 'Failed to load settings.')
+        }
+      }
     }
-  }, [streamlabsToken, streamlabsUrl, touched])
+
+    void load()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const errors = useMemo(() => ({
+    url: touched.url ? validateUrl(streamlabsUrl) : undefined,
+    token: touched.token ? validateToken(streamlabsToken) : undefined,
+  }), [streamlabsUrl, streamlabsToken, touched])
 
   const handleUrlChange = (value: string) => {
     setStreamlabsUrl(value)
@@ -91,9 +105,8 @@ const Settings = () => {
     setStatus('idle')
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-
     setTouched({ url: true, token: true })
 
     const urlError = validateUrl(streamlabsUrl)
@@ -103,9 +116,37 @@ const Settings = () => {
       return
     }
 
-    persistSetting(STORAGE_KEYS.streamlabsUrl, streamlabsUrl.trim())
-    persistSetting(STORAGE_KEYS.streamlabsToken, streamlabsToken.trim())
-    setStatus('saved')
+    setStatus('saving')
+    try {
+      const payload: Partial<DonationSettingsDto> = {
+        streamlabsUrl: streamlabsUrl.trim(),
+        defaultAmount: donationSettings?.defaultAmount ?? null,
+        currency: donationSettings?.currency ?? 'USD',
+      }
+
+      const [updatedDonation, updatedStatus] = await Promise.all([
+        upsertDonationSettings(payload),
+        upsertStreamlabsCredentials({ accessToken: streamlabsToken.trim() }),
+      ])
+
+      setDonationSettings(updatedDonation)
+      setStreamlabsStatus(updatedStatus)
+      setStreamlabsToken('')
+      setStatus('saved')
+    } catch (error) {
+      console.error('Failed to update settings', error)
+      setStatus('error')
+    }
+  }
+
+  const handleRemoveCredentials = async () => {
+    try {
+      await deleteStreamlabsCredentials()
+      setStreamlabsStatus({ hasCredentials: false, tokenExpiresAt: null })
+      setStatus('idle')
+    } catch (error) {
+      console.error('Failed to delete Streamlabs credentials', error)
+    }
   }
 
   return (
@@ -118,7 +159,10 @@ const Settings = () => {
           <form className={styles.form} onSubmit={handleSubmit} noValidate>
             <div className={styles.sectionHeader}>
               <Heading level={2}>Streamlabs Integration</Heading>
-              <p className={styles.sectionCopy}>Configure the tip URL and access token shared with Champ Select.</p>
+              <p className={styles.sectionCopy}>
+                Configure the donation link shared with Champ Select and store your Streamlabs access token.
+              </p>
+              {loadError ? <InlineError id="settings-load-error">{loadError}</InlineError> : null}
             </div>
             <div className={styles.fieldGroup}>
               <TextInput
@@ -143,14 +187,29 @@ const Settings = () => {
                 ariaInvalid={Boolean(errors.token)}
                 ariaDescribedBy={errors.token ? 'streamlabs-token-error' : undefined}
               />
+              {streamlabsStatus?.hasCredentials ? (
+                <BodyCopy>
+                  A token is already saved. Enter a new token to replace it or remove the existing credentials below.
+                </BodyCopy>
+              ) : null}
               {errors.token ? <InlineError id="streamlabs-token-error">{errors.token}</InlineError> : null}
             </div>
             <div className={styles.actions}>
-              <Button type="submit">Save Settings</Button>
+              <Button type="submit" disabled={status === 'saving'}>
+                {status === 'saving' ? 'Saving…' : 'Save Settings'}
+              </Button>
+              {streamlabsStatus?.hasCredentials ? (
+                <Button variant="ghost" type="button" onClick={handleRemoveCredentials}>
+                  Remove Token
+                </Button>
+              ) : null}
               {status === 'saved' ? (
                 <p className={styles.success} role="status">
                   Settings saved.
                 </p>
+              ) : null}
+              {status === 'error' ? (
+                <InlineError id="settings-error">Failed to save settings. Please try again.</InlineError>
               ) : null}
             </div>
           </form>
@@ -160,4 +219,12 @@ const Settings = () => {
   )
 }
 
+const BodyCopy = ({ children }: { children: ReactNode }) => (
+  <p className={styles.sectionCopy}>{children}</p>
+)
+
 export default Settings
+
+
+
+

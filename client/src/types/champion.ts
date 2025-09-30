@@ -1,5 +1,9 @@
-﻿export type Champion = {
+export type Champion = {
   id: string
   name: string
-  img: string
+  imageUrl: string
+  role: string | null
+  tags: string[]
+  isActive: boolean
+  position?: number
 }

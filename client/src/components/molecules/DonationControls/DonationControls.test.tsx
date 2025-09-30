@@ -1,4 +1,4 @@
-ï»¿import { useState } from 'react'
+import { useState } from 'react'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import userEvent from '@testing-library/user-event'
@@ -49,10 +49,25 @@ describe('DonationControls', () => {
     expect(screen.getByText('Enter a number')).toBeInTheDocument()
     expect(screen.getByLabelText('Current Donation Amount')).toHaveAttribute('aria-describedby', 'donation-error')
   })
+
+  it('disables the save button while saving', async () => {
+    const user = userEvent.setup()
+    const handleSave = vi.fn()
+
+    render(
+      <DonationControls
+        amount="15"
+        onAmountChange={() => {}}
+        onSave={handleSave}
+        isInvalid={false}
+        isSaving
+      />,
+    )
+
+    const button = screen.getByRole('button', { name: 'Saving…' })
+    expect(button).toBeDisabled()
+
+    await user.click(button)
+    expect(handleSave).not.toHaveBeenCalled()
+  })
 })
-
-
-
-
-
-

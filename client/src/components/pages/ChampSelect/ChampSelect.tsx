@@ -1,91 +1,17 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Avatar, Button, Card, Heading } from '../../atoms'
-import type { Champion } from '../../../types/champion'
 import styles from './ChampSelect.module.css'
+import { fetchPublicRoster, type ChampionDto, type DonationSettingsDto } from '../../../lib/endpoints'
+import { getRealtimeSocket } from '../../../lib/realtime'
 
-const DONATION_URL_BASE = 'https://streamlabs.com/<your-channel>/tip'
+import { useParams } from 'react-router-dom'
 
-const STORAGE_KEYS = {
-  champions: 'champ-select-admin:champions',
-  donationAmount: 'champ-select-admin:donationAmount',
-} as const
+const DONATION_URL_FALLBACK = 'https://streamlabs.com/<your-channel>/tip'
 
-const INITIAL_CHAMPIONS: Champion[] = [
-  { id: 'ahri', name: 'Ahri', img: 'https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Ahri.png' },
-  { id: 'leesin', name: 'Lee Sin', img: 'https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/LeeSin.png' },
-  { id: 'amumu', name: 'Amumu', img: 'https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Amumu.png' },
-  { id: 'yasuo', name: 'Yasuo', img: 'https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Yasuo.png' },
-  { id: 'lillia', name: 'Lillia', img: 'https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Lillia.png' },
-]
-
-type ClassValue = string | null | undefined | false
-
-const cx = (...values: ClassValue[]): string => values.filter(Boolean).join(' ')
-
-const isBrowser = typeof window !== 'undefined'
-
-const readLocalStorage = (key: string): string | null => {
-  if (!isBrowser) {
-    return null
-  }
-  try {
-    return window.localStorage.getItem(key)
-  } catch {
-    return null
-  }
-}
-
-const isChampion = (value: unknown): value is Champion => {
-  if (typeof value !== 'object' || value === null) {
-    return false
-  }
-  const candidate = value as Record<string, unknown>
-  return typeof candidate.id === 'string' && typeof candidate.name === 'string' && typeof candidate.img === 'string'
-}
-
-const loadChampions = (): Champion[] => {
-  const stored = readLocalStorage(STORAGE_KEYS.champions)
-  if (!stored) {
-    return INITIAL_CHAMPIONS
-  }
-  try {
-    const parsed = JSON.parse(stored)
-    if (Array.isArray(parsed)) {
-      const valid = parsed.filter(isChampion)
-      return valid.length > 0 ? valid : INITIAL_CHAMPIONS
-    }
-  } catch {
-    // ignore parse errors and fall back to the default list
-  }
-  return INITIAL_CHAMPIONS
-}
-
-const loadDonationAmount = (): string => readLocalStorage(STORAGE_KEYS.donationAmount) ?? ''
-
-type DonationInfo = {
-  isValid: boolean
-  displayLabel: string
-  sanitizedAmount: string
-}
-
-const parseDonationAmount = (raw: string): DonationInfo => {
-  const trimmed = raw.trim()
-  if (trimmed === '') {
-    return { isValid: false, displayLabel: '', sanitizedAmount: '' }
-  }
-  const numeric = Number.parseFloat(trimmed)
-  if (!Number.isFinite(numeric) || Number.isNaN(numeric) || numeric < 0) {
-    return { isValid: false, displayLabel: '', sanitizedAmount: '' }
-  }
-  return {
-    isValid: true,
-    displayLabel: `$${numeric.toFixed(2)}`,
-    sanitizedAmount: trimmed,
-  }
-}
+const cx = (...values: Array<string | null | undefined | false>) => values.filter(Boolean).join(' ')
 
 const openDonationUrl = (href: string) => {
-  if (!href || !isBrowser) {
+  if (!href) {
     return
   }
   window.open(href, '_blank', 'noopener,noreferrer')
@@ -119,9 +45,10 @@ type DonationBarProps = {
   buttonLabel: string
   buttonAriaLabel: string
   hasPrefilledAmount: boolean
+  isDisabled?: boolean
 }
 
-const DonationBar = ({ amountLabel, donationUrl, buttonLabel, buttonAriaLabel, hasPrefilledAmount }: DonationBarProps) => (
+const DonationBar = ({ amountLabel, donationUrl, buttonLabel, buttonAriaLabel, hasPrefilledAmount, isDisabled }: DonationBarProps) => (
   <Card className={styles.donationCard}>
     <div className={styles.donation}>
       <div className={styles.donationMeta}>
@@ -140,7 +67,7 @@ const DonationBar = ({ amountLabel, donationUrl, buttonLabel, buttonAriaLabel, h
         ) : null}
       </div>
       <div className={styles.donationAction}>
-        <Button onClick={() => openDonationUrl(donationUrl)} ariaLabel={buttonAriaLabel}>
+        <Button onClick={() => openDonationUrl(donationUrl)} ariaLabel={buttonAriaLabel} disabled={isDisabled}>
           {buttonLabel}
         </Button>
       </div>
@@ -149,12 +76,12 @@ const DonationBar = ({ amountLabel, donationUrl, buttonLabel, buttonAriaLabel, h
 )
 
 type ChampionListItemProps = {
-  champ: Champion
+  champ: ChampionDto
 }
 
 const ChampionListItem = ({ champ }: ChampionListItemProps) => (
   <li className={styles.championListItem}>
-    <Avatar name={champ.name} src={champ.img} />
+    <Avatar name={champ.name} src={champ.imageUrl} />
     <div className={styles.championDetails}>
       <Heading level={3} className={styles.championName}>
         {champ.name}
@@ -167,7 +94,7 @@ const ChampionListItem = ({ champ }: ChampionListItemProps) => (
 )
 
 type ChampionListProps = {
-  champs: Champion[]
+  champs: ChampionDto[]
 }
 
 const ChampionList = ({ champs }: ChampionListProps) => (
@@ -207,42 +134,191 @@ const PublicLayout = ({ header, donationBar, championList }: PublicLayoutProps) 
   </div>
 )
 
-const useChampions = (): Champion[] => {
-  const [champions] = useState<Champion[]>(() => loadChampions())
-  return champions
+type RosterState = {
+  champions: ChampionDto[]
+  donationSettings: DonationSettingsDto | null
+  loading: boolean
+  error: string | null
 }
 
-const useDonationInfo = (): DonationInfo => {
-  const [rawAmount] = useState<string>(() => loadDonationAmount())
-  return useMemo(() => parseDonationAmount(rawAmount), [rawAmount])
+const formatAmountLabel = (value: number | null | undefined, currency: string) => {
+  if (value == null || Number.isNaN(value)) {
+    return ''
+  }
+  const formatter = new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+  return formatter.format(value)
 }
 
-const buildDonationUrl = (info: DonationInfo): string =>
-  info.isValid ? `${DONATION_URL_BASE}?amount=${encodeURIComponent(info.sanitizedAmount)}` : DONATION_URL_BASE
+const buildDonationUrl = (settings: DonationSettingsDto | null, fallbackAmount: string) => {
+  const base = settings?.streamlabsUrl?.trim() || DONATION_URL_FALLBACK
+  if (fallbackAmount) {
+    const separator = base.includes('?') ? '&' : '?'
+    return `${base}${separator}amount=${encodeURIComponent(fallbackAmount)}`
+  }
+  return base
+}
 
 export default function ChampSelect() {
-  const champions = useChampions()
-  const donationInfo = useDonationInfo()
+  const [state, setState] = useState<RosterState>({
+    champions: [],
+    donationSettings: null,
+    loading: true,
+    error: null,
+  })
 
-  const donationUrl = buildDonationUrl(donationInfo)
-  const donationButtonLabel = donationInfo.isValid ? `Donate ${donationInfo.displayLabel}` : 'Donate'
-  const donationButtonAria = donationInfo.isValid
-    ? `Donate ${donationInfo.displayLabel}`
-    : 'Donate to the stream'
+  const { ownerId } = useParams<{ ownerId?: string }>()
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return
+    }
+
+    const previousTitle = document.title
+    document.title = 'Champ Select'
+
+    return () => {
+      document.title = previousTitle
+    }
+  }, [])
+
+  const isMountedRef = useRef(true)
+
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
+  const loadRoster = useCallback(
+    async ({ showLoading = false }: { showLoading?: boolean } = {}) => {
+      if (showLoading) {
+        setState((prev) => ({ ...prev, loading: true, error: null }))
+      }
+
+      try {
+        const data = await fetchPublicRoster(ownerId ?? undefined)
+        if (!isMountedRef.current) {
+          return
+        }
+        setState({
+          champions: data.champions.filter((champion) => champion.isActive),
+          donationSettings: data.donationSettings,
+          loading: false,
+          error: null,
+        })
+      } catch (error) {
+        if (!isMountedRef.current) {
+          return
+        }
+        setState({
+          champions: [],
+          donationSettings: null,
+          loading: false,
+          error: error instanceof Error ? error.message : 'Failed to load roster.',
+        })
+      }
+    },
+    [ownerId],
+  )
+
+  useEffect(() => {
+    void loadRoster({ showLoading: true })
+  }, [loadRoster])
+
+  useEffect(() => {
+    const socket = getRealtimeSocket()
+    const handleRosterChanged = () => {
+      void loadRoster()
+    }
+
+    socket.on('publicRoster:changed', handleRosterChanged)
+
+    return () => {
+      socket.off('publicRoster:changed', handleRosterChanged)
+    }
+  }, [loadRoster])
+
+  const donationAmountLabel = useMemo(() => {
+    if (!state.donationSettings?.defaultAmount) {
+      return ''
+    }
+    return formatAmountLabel(state.donationSettings.defaultAmount, state.donationSettings.currency)
+  }, [state.donationSettings])
+
+  const donationUrl = useMemo(() => {
+    const amount = state.donationSettings?.defaultAmount ?? null
+    const amountString = amount != null && Number.isFinite(amount) ? amount.toString() : ''
+    return buildDonationUrl(state.donationSettings, amountString)
+  }, [state.donationSettings])
+
+  const donationButtonLabel = donationAmountLabel ? `Donate ${donationAmountLabel}` : 'Donate'
+  const donationButtonAria = donationAmountLabel ? `Donate ${donationAmountLabel}` : 'Donate to the stream'
+
+  if (state.loading) {
+    return (
+      <PublicLayout
+        header={<PublicHeader />}
+        donationBar={
+          <DonationBar
+            amountLabel=""
+            donationUrl={donationUrl}
+            buttonLabel="Donate"
+            buttonAriaLabel="Donate to the stream"
+            hasPrefilledAmount={false}
+            isDisabled
+          />
+        }
+        championList={<Card className={styles.championList}><BodyText tone="muted">Loading roster…</BodyText></Card>}
+      />
+    )
+  }
+
+  if (state.error) {
+    return (
+      <PublicLayout
+        header={<PublicHeader />}
+        donationBar={
+          <DonationBar
+            amountLabel=""
+            donationUrl={donationUrl}
+            buttonLabel="Donate"
+            buttonAriaLabel="Donate to the stream"
+            hasPrefilledAmount={false}
+            isDisabled
+          />
+        }
+        championList={<Card className={styles.championList}><BodyText tone="muted">{state.error}</BodyText></Card>}
+      />
+    )
+  }
 
   return (
     <PublicLayout
       header={<PublicHeader />}
       donationBar={
         <DonationBar
-          amountLabel={donationInfo.displayLabel}
+          amountLabel={donationAmountLabel}
           donationUrl={donationUrl}
           buttonLabel={donationButtonLabel}
           buttonAriaLabel={donationButtonAria}
-          hasPrefilledAmount={donationInfo.isValid}
+          hasPrefilledAmount={Boolean(donationAmountLabel)}
         />
       }
-      championList={<ChampionList champs={champions} />}
+      championList={
+        state.champions.length > 0 ? (
+          <ChampionList champs={state.champions} />
+        ) : (
+          <Card className={styles.championList}>
+            <BodyText tone="muted">No champions available yet. Check back soon!</BodyText>
+          </Card>
+        )
+      }
     />
   )
 }

@@ -1,4 +1,4 @@
-﻿import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd'
+import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd'
 import type { Champion } from '../../../types/champion'
 import { Avatar, IconButton } from '../../atoms'
 import styles from './ChampionRow.module.css'
@@ -12,10 +12,10 @@ type ChampionRowProps = {
 const ChampionRow = ({ champ, onRemove, dragHandleProps }: ChampionRowProps) => (
   <div className={styles.row}>
     <div className={styles.info} {...(dragHandleProps ?? {})}>
-      <Avatar name={champ.name} src={champ.img} />
+      <Avatar name={champ.name} src={champ.imageUrl} />
       <span className={styles.name}>{champ.name}</span>
     </div>
-    <IconButton icon="×" onClick={() => onRemove(champ.id)} ariaLabel={`Remove ${champ.name}`} />
+    <IconButton icon="x" onClick={() => onRemove(champ.id)} ariaLabel={`Remove ${champ.name}`} />
   </div>
 )
 

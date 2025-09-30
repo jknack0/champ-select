@@ -1,139 +1,346 @@
-ï»¿import { useCallback, useState } from 'react'
-import type { Champion } from '../../../types/champion'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { DonationControls } from '../../molecules'
 import { ChampionList, AdminHeader } from '../../organisms'
 import { AdminLayout } from '../../templates'
+import { useAuth } from '../../../context/AuthContext'
+import type { Champion } from '../../../types/champion'
+import {
+  fetchRosters,
+  fetchChampions,
+  createRoster,
+  updateRosterOrder,
+  removeChampionFromRoster,
+  fetchDonationSettings,
+  upsertDonationSettings,
+  type DonationSettingsDto,
+} from '../../../lib/endpoints'
 
-const INITIAL_CHAMPIONS: Champion[] = [
-  { id: 'ahri', name: 'Ahri', img: 'https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Ahri.png' },
-  { id: 'leesin', name: 'Lee Sin', img: 'https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/LeeSin.png' },
-  { id: 'amumu', name: 'Amumu', img: 'https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Amumu.png' },
-  { id: 'yasuo', name: 'Yasuo', img: 'https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Yasuo.png' },
-  { id: 'lillia', name: 'Lillia', img: 'https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Lillia.png' },
-]
+const DEFAULT_ROSTER_NAME = 'Stream Default'
+const DEFAULT_CHAMPION_IDS = ['ahri', 'leesin', 'amumu', 'yasuo', 'lillia']
 
-const STORAGE_KEYS = {
-  champions: 'champ-select-admin:champions',
-  donationAmount: 'champ-select-admin:donationAmount',
-} as const
-
-const loadChampions = (): Champion[] => {
-  if (typeof window === 'undefined') {
-    return INITIAL_CHAMPIONS
-  }
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEYS.champions)
-    if (!raw) {
-      return INITIAL_CHAMPIONS
-    }
-    const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed)) {
-      return INITIAL_CHAMPIONS
-    }
-    const sanitized = parsed.filter(
-      (item: Partial<Champion>): item is Champion =>
-        typeof item?.id === 'string' && typeof item?.name === 'string' && typeof item?.img === 'string',
-    )
-    return sanitized.length ? sanitized : INITIAL_CHAMPIONS
-  } catch (error) {
-    console.error('Failed to load champions from localStorage', error)
-    return INITIAL_CHAMPIONS
-  }
+type AdminState = {
+  rosterId: number | null
+  champions: Champion[]
+  donationSettings: DonationSettingsDto | null
+  loading: boolean
+  error: string | null
+  savingDonation: boolean
+  donationAmount: string
+  donationValidationError: string
+  shareLinkStatus: 'idle' | 'copied' | 'error'
 }
 
-const loadDonationAmount = (): string => {
-  if (typeof window === 'undefined') {
-    return ''
-  }
-  try {
-    return window.localStorage.getItem(STORAGE_KEYS.donationAmount) ?? ''
-  } catch (error) {
-    console.error('Failed to load donation amount from localStorage', error)
-    return ''
-  }
+const reorder = (list: Champion[], startIndex: number, endIndex: number) => {
+  const next = [...list]
+  const [removed] = next.splice(startIndex, 1)
+  next.splice(endIndex, 0, removed)
+  return next
 }
 
-const persistChampions = (value: Champion[]) => {
-  if (typeof window === 'undefined') {
-    return
-  }
-  window.localStorage.setItem(STORAGE_KEYS.champions, JSON.stringify(value))
-}
-
-const persistDonationAmount = (value: string) => {
-  if (typeof window === 'undefined') {
-    return
-  }
-  window.localStorage.setItem(STORAGE_KEYS.donationAmount, value)
-}
-
-const reorderChampions = (list: Champion[], startIndex: number, endIndex: number) => {
-  const updated = [...list]
-  const [removed] = updated.splice(startIndex, 1)
-  updated.splice(endIndex, 0, removed)
-  return updated
-}
+const normalizeChampions = (incoming: Champion[]): Champion[] =>
+  incoming
+    .filter((champ) => champ.isActive !== false)
+    .map((champ) => ({
+      id: champ.id,
+      name: champ.name,
+      imageUrl: champ.imageUrl,
+      role: champ.role ?? null,
+      tags: champ.tags ?? [],
+      isActive: champ.isActive,
+      position: champ.position,
+    }))
 
 const ChampSelectAdmin = () => {
-  const [champs, setChamps] = useState<Champion[]>(() => loadChampions())
-  const [donationAmount, setDonationAmount] = useState<string>(() => loadDonationAmount())
-  const [validationError, setValidationError] = useState('')
+  const [state, setState] = useState<AdminState>({
+    rosterId: null,
+    champions: [],
+    donationSettings: null,
+    loading: true,
+    error: null,
+    savingDonation: false,
+    donationAmount: '',
+    donationValidationError: '',
+    shareLinkStatus: 'idle',
+  })
 
-  const handleRemove = useCallback((id: string) => {
-    setChamps((prev) => {
-      const next = prev.filter((champ) => champ.id !== id)
-      persistChampions(next)
-      return next
-    })
+  const { user } = useAuth()
+  const copyTimeoutRef = useRef<number | null>(null)
+
+  const shareLink = useMemo(() => {
+    if (!user || typeof window === 'undefined') {
+      return ''
+    }
+    return `${window.location.origin}/champ-select/${user.id}`
+  }, [user])
+
+  const loadInitialData = useCallback(async () => {
+    setState((prev) => ({ ...prev, loading: true, error: null }))
+
+    try {
+      const [rosters, donation] = await Promise.all([fetchRosters(), fetchDonationSettings().catch(() => null)])
+      let activeRoster = rosters.find((roster) => roster.isPublic) ?? rosters[0] ?? null
+
+      if (!activeRoster) {
+        const availableChampions = await fetchChampions()
+        const seededChampionIds = availableChampions
+          .filter((champ) => champ.isActive)
+          .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+          .map((champ) => champ.id)
+
+        const championIds = seededChampionIds.length > 0 ? seededChampionIds : DEFAULT_CHAMPION_IDS
+        activeRoster = await createRoster({
+          name: DEFAULT_ROSTER_NAME,
+          championIds,
+          isPublic: true,
+        })
+      }
+
+      setState({
+        rosterId: activeRoster.id,
+        champions: normalizeChampions(activeRoster.champions as Champion[]),
+        donationSettings: donation ?? null,
+        loading: false,
+        error: null,
+        savingDonation: false,
+        donationAmount:
+          donation?.defaultAmount != null && Number.isFinite(donation.defaultAmount)
+            ? String(donation.defaultAmount)
+            : '',
+        donationValidationError: '',
+        shareLinkStatus: 'idle',
+      })
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: error instanceof Error ? error.message : 'Failed to load admin data.',
+      }))
+    }
   }, [])
 
-  const handleReorder = useCallback((fromIndex: number, toIndex: number) => {
-    setChamps((prev) => {
-      const next = reorderChampions(prev, fromIndex, toIndex)
-      persistChampions(next)
-      return next
-    })
+  useEffect(() => {
+    void loadInitialData()
+  }, [loadInitialData])
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current != null && typeof window !== 'undefined') {
+        window.clearTimeout(copyTimeoutRef.current)
+        copyTimeoutRef.current = null
+      }
+    }
   }, [])
+
+  const handleCopyShareLink = useCallback(async () => {
+    if (!shareLink) {
+      return
+    }
+
+    try {
+      const canUseClipboard = typeof navigator !== 'undefined' && navigator.clipboard?.writeText
+      if (canUseClipboard) {
+        await navigator.clipboard.writeText(shareLink)
+      } else if (typeof document !== 'undefined') {
+        const textarea = document.createElement('textarea')
+        textarea.value = shareLink
+        textarea.setAttribute('readonly', '')
+        textarea.style.position = 'absolute'
+        textarea.style.left = '-9999px'
+        document.body.appendChild(textarea)
+        textarea.select()
+        const successful = document.execCommand('copy')
+        document.body.removeChild(textarea)
+        if (!successful) {
+          throw new Error('Copy command was unsuccessful')
+        }
+      } else {
+        throw new Error('Clipboard API not available')
+      }
+
+      setState((prev) => ({ ...prev, shareLinkStatus: 'copied' }))
+
+      if (copyTimeoutRef.current != null && typeof window !== 'undefined') {
+        window.clearTimeout(copyTimeoutRef.current)
+        copyTimeoutRef.current = null
+      }
+      if (typeof window !== 'undefined') {
+        copyTimeoutRef.current = window.setTimeout(() => {
+          setState((current) => ({ ...current, shareLinkStatus: 'idle' }))
+          copyTimeoutRef.current = null
+        }, 2000)
+      }
+    } catch (error) {
+      console.error('Failed to copy viewer link', error)
+      setState((prev) => ({ ...prev, shareLinkStatus: 'error' }))
+    }
+  }, [shareLink])
+
+  const handleRemove = useCallback(
+    (id: string) => {
+      setState((prev) => {
+        if (!prev.rosterId) {
+          return prev
+        }
+        const previousChampions = prev.champions
+        const updatedChampions = previousChampions.filter((champ) => champ.id !== id)
+
+        void removeChampionFromRoster(prev.rosterId, id)
+          .then((response) => {
+            setState((current) => ({
+              ...current,
+              champions: normalizeChampions(response.champions as Champion[]),
+              error: null,
+            }))
+          })
+          .catch((error) => {
+            console.error('Failed to remove champion from roster', error)
+            setState((current) => ({
+              ...current,
+              champions: previousChampions,
+              error: 'Failed to remove champion. Please try again.',
+            }))
+          })
+
+        return { ...prev, champions: updatedChampions }
+      })
+    },
+    [],
+  )
+
+  const handleReorder = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      setState((prev) => {
+        if (!prev.rosterId) {
+          return prev
+        }
+
+        const previousChampions = prev.champions
+        const reordered = reorder(previousChampions, fromIndex, toIndex)
+
+        void updateRosterOrder(prev.rosterId, reordered.map((champ) => champ.id))
+          .then((response) => {
+            setState((current) => ({
+              ...current,
+              champions: normalizeChampions(response.champions as Champion[]),
+              error: null,
+            }))
+          })
+          .catch((error) => {
+            console.error('Failed to update roster order', error)
+            setState((current) => ({
+              ...current,
+              champions: previousChampions,
+              error: 'Failed to reorder champions. Please try again.',
+            }))
+          })
+
+        return { ...prev, champions: reordered }
+      })
+    },
+    [],
+  )
 
   const handleAmountChange = useCallback((value: string) => {
-    setDonationAmount(value)
-    if (validationError) {
-      setValidationError('')
-    }
-  }, [validationError])
+    setState((prev) => ({
+      ...prev,
+      donationAmount: value,
+      donationValidationError: '',
+    }))
+  }, [])
 
   const handleSaveDonation = useCallback(() => {
-    const normalized = donationAmount.trim()
-    if (normalized.length === 0) {
-      setValidationError('Donation amount is required.')
-      return
-    }
-    const numericValue = Number(normalized)
-    if (Number.isNaN(numericValue) || numericValue < 0) {
-      setValidationError('Enter a valid non-negative number.')
-      return
-    }
-    persistDonationAmount(normalized)
-    setValidationError('')
-    setDonationAmount(normalized)
-  }, [donationAmount])
+    setState((prev) => {
+      const normalized = prev.donationAmount.trim()
+      if (normalized.length === 0) {
+        return {
+          ...prev,
+          donationValidationError: 'Donation amount is required.',
+        }
+      }
+      const numericValue = Number(normalized)
+      if (Number.isNaN(numericValue) || numericValue < 0) {
+        return {
+          ...prev,
+          donationValidationError: 'Enter a valid non-negative number.',
+        }
+      }
+
+      const payload: Partial<DonationSettingsDto> = {
+        streamlabsUrl: prev.donationSettings?.streamlabsUrl ?? null,
+        defaultAmount: numericValue,
+        currency: prev.donationSettings?.currency ?? 'USD',
+      }
+
+      void upsertDonationSettings(payload)
+        .then((response) => {
+          setState((current) => ({
+            ...current,
+            donationSettings: response,
+            donationAmount: response.defaultAmount != null ? String(response.defaultAmount) : '',
+            donationValidationError: '',
+            savingDonation: false,
+          }))
+        })
+        .catch((error) => {
+          console.error('Failed to save donation settings', error)
+          setState((current) => ({
+            ...current,
+            savingDonation: false,
+            donationValidationError: 'Failed to save donation settings. Please try again.',
+          }))
+        })
+
+      return { ...prev, savingDonation: true, donationValidationError: '' }
+    })
+  }, [])
 
   const donationErrorId = 'donation-amount-error'
 
+  const header = (
+    <AdminHeader
+      shareLink={shareLink}
+      shareLinkStatus={state.shareLinkStatus}
+      onCopyShareLink={shareLink ? handleCopyShareLink : undefined}
+    />
+  )
+
+  const donationControls = (
+    <DonationControls
+      amount={state.donationAmount}
+      onAmountChange={handleAmountChange}
+      onSave={handleSaveDonation}
+      isInvalid={Boolean(state.donationValidationError)}
+      errorId={state.donationValidationError ? donationErrorId : undefined}
+      errorMessage={state.donationValidationError || undefined}
+      isSaving={state.savingDonation}
+    />
+  )
+
+  if (state.loading) {
+    return (
+      <AdminLayout
+        header={header}
+        donation={donationControls}
+        championList={<div>Loading roster…</div>}
+      />
+    )
+  }
+
+  if (state.error) {
+    return (
+      <AdminLayout
+        header={header}
+        donation={donationControls}
+        championList={<div>{state.error}</div>}
+      />
+    )
+  }
+
   return (
     <AdminLayout
-      header={<AdminHeader />}
-      donation={
-        <DonationControls
-          amount={donationAmount}
-          onAmountChange={handleAmountChange}
-          onSave={handleSaveDonation}
-          isInvalid={Boolean(validationError)}
-          errorId={validationError ? donationErrorId : undefined}
-          errorMessage={validationError || undefined}
-        />
-      }
-      championList={<ChampionList champs={champs} onReorder={handleReorder} onRemove={handleRemove} />}
+      header={header}
+      donation={donationControls}
+      championList={<ChampionList champs={state.champions} onReorder={handleReorder} onRemove={handleRemove} />}
     />
   )
 }
