@@ -1,4 +1,4 @@
-﻿import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { ChampSelect, ChampSelectAdmin, Settings, Overlay, Login, Signup } from './components/pages'
 import ProtectedRoute from './components/routes/ProtectedRoute'
 import './App.css'
@@ -9,30 +9,14 @@ const App = () => {
   const { user } = useAuth()
   const location = useLocation()
   const isViewerRoute = /^\/champ-select(?:\/|$)/.test(location.pathname)
+  const defaultRoute = user ? '/champ-select' : '/login'
 
   return (
     <div className="app">
       {!isViewerRoute ? (
         <nav className="nav">
           <div className="nav-inner">
-            <div className="nav-links">
-              {user ? (
-                <>
-                  <NavLink
-                    to="/champ-select-admin"
-                    className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-                  >
-                    Champ Select Admin
-                  </NavLink>
-                  <NavLink
-                    to="/overlay"
-                    className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-                  >
-                    Overlay
-                  </NavLink>
-                </>
-              ) : null}
-            </div>
+            <div className="nav-links" />
             <div className="nav-actions">
               <AuthMenu />
             </div>
@@ -42,7 +26,7 @@ const App = () => {
 
       <main className="main">
         <Routes>
-          <Route path="/champ-select/:ownerId?" element={<ChampSelect />} />
+          <Route path="/champ-select" element={<ChampSelect />} />
           <Route
             path="/champ-select-admin"
             element={
@@ -62,8 +46,8 @@ const App = () => {
           <Route path="/overlay" element={<Overlay />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/" element={<Navigate to="/champ-select" replace />} />
-          <Route path="*" element={<Navigate to="/champ-select" replace />} />
+          <Route path="/" element={<Navigate to={defaultRoute} replace />} />
+          <Route path="*" element={<Navigate to={defaultRoute} replace />} />
         </Routes>
       </main>
     </div>
@@ -71,3 +55,14 @@ const App = () => {
 }
 
 export default App
+
+
+
+
+
+
+
+
+
+
+

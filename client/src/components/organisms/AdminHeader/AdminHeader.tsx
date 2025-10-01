@@ -1,55 +1,69 @@
-﻿import { Heading, Button } from '../../atoms'
+import { Heading, Button } from '../../atoms'
 import styles from './AdminHeader.module.css'
 
-type AdminHeaderProps = {
-  shareLink?: string
-  shareLinkStatus?: 'idle' | 'copied' | 'error'
-  onCopyShareLink?: () => void
+type ShareStatus = 'idle' | 'copied' | 'error'
+
+type ShareLinkConfig = {
+  label: string
+  url: string
+  status: ShareStatus
+  onCopy?: () => void
 }
 
-const AdminHeader = ({ shareLink, shareLinkStatus = 'idle', onCopyShareLink }: AdminHeaderProps) => {
-  const showShareLink = Boolean(shareLink)
-  const canCopy = Boolean(onCopyShareLink)
+type AdminHeaderProps = {
+  shareLinks?: ShareLinkConfig[]
+}
 
-  let feedback: string | null = null
-  if (shareLinkStatus === 'copied') {
-    feedback = 'Link copied!'
-  } else if (shareLinkStatus === 'error') {
-    feedback = 'Copy failed. Try again.'
-  }
-
+const AdminHeader = ({ shareLinks = [] }: AdminHeaderProps) => {
   return (
     <header className={styles.header}>
       <Heading level={1}>Champ Select Admin</Heading>
-      {showShareLink ? (
-        <div className={styles.shareSection} role="group" aria-labelledby="viewer-link-label">
-          <div className={styles.shareContent}>
-            <span className={styles.shareLabel} id="viewer-link-label">
-              Viewer Link
-            </span>
-            <div className={styles.shareControl}>
-              <input
-                className={styles.shareInput}
-                value={shareLink}
-                readOnly
-                aria-label="Viewer link"
-                onFocus={(event) => event.currentTarget.select()}
-              />
-              <Button type="button" onClick={onCopyShareLink} disabled={!canCopy}>
-                Copy Link
-              </Button>
-            </div>
-            {feedback ? (
-              <span
-                className={shareLinkStatus === 'copied' ? styles.success : styles.error}
-                role="status"
-              >
-                {feedback}
-              </span>
-            ) : (
-              <span className={styles.helper}>Share this link with your viewers to keep them in sync.</span>
-            )}
-          </div>
+      {shareLinks.length > 0 ? (
+        <div className={styles.shareList}>
+          {shareLinks.map(({ label, url, status, onCopy }, index) => {
+            const labelId = `share-link-${index}`
+
+            let feedbackText: string | null = null
+            let feedbackClass = styles.helper
+            let feedbackRole: 'status' | undefined
+
+            if (status === 'copied') {
+              feedbackText = 'Link copied!'
+              feedbackClass = styles.success
+              feedbackRole = 'status'
+            } else if (status === 'error') {
+              feedbackText = 'Copy failed. Try again.'
+              feedbackClass = styles.error
+              feedbackRole = 'status'
+            }
+
+            return (
+              <div key={label} className={styles.shareSection} role="group" aria-labelledby={labelId}>
+                <div className={styles.shareContent}>
+                  <span className={styles.shareLabel} id={labelId}>
+                    {label}
+                  </span>
+                  <div className={styles.shareControl}>
+                    <input
+                      className={styles.shareInput}
+                      value={url}
+                      readOnly
+                      aria-label={label}
+                      onFocus={(event) => event.currentTarget.select()}
+                    />
+                    <Button type="button" variant="ghost" onClick={onCopy} disabled={!onCopy}>
+                      Copy Link
+                    </Button>
+                  </div>
+                  {feedbackText ? (
+                    <span className={feedbackClass} role={feedbackRole}>
+                      {feedbackText}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            )
+          })}
         </div>
       ) : null}
     </header>

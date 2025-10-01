@@ -1,1 +1,1 @@
-﻿export { default } from './ChampSelect';
+export { default } from './ChampSelect'

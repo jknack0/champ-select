@@ -15,6 +15,22 @@ const mapChampionRow = (row: any) => ({
   updatedAt: row.updated_at,
 })
 
+router.get('/catalog', requireAuth, async (_req: AuthenticatedRequest, res) => {
+  try {
+    const db = await getDb()
+    const champions = await db.all(
+      `SELECT id, name, image_url, role, tags, is_active, created_at, updated_at
+         FROM champions
+         ORDER BY CASE WHEN lower(role) = 'jungle' THEN 0 ELSE 1 END, name ASC`,
+    )
+
+    return res.json(champions.map(mapChampionRow))
+  } catch (error) {
+    console.error('Error fetching champion catalog', error)
+    return res.status(500).json({ message: 'Internal server error' })
+  }
+})
+
 router.get('/', async (_req, res) => {
   try {
     const db = await getDb()

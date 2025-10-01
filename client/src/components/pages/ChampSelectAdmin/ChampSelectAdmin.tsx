@@ -1,22 +1,34 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Card, Heading, Button, InlineError } from '../../atoms'
 import { DonationControls } from '../../molecules'
 import { ChampionList, AdminHeader } from '../../organisms'
 import { AdminLayout } from '../../templates'
+import styles from './ChampSelectAdmin.module.css'
 import { useAuth } from '../../../context/AuthContext'
 import type { Champion } from '../../../types/champion'
 import {
   fetchRosters,
-  fetchChampions,
   createRoster,
   updateRosterOrder,
   removeChampionFromRoster,
   fetchDonationSettings,
   upsertDonationSettings,
+  addChampionToRoster,
+  fetchChampionCatalog,
+  type ChampionDto,
   type DonationSettingsDto,
 } from '../../../lib/endpoints'
 
 const DEFAULT_ROSTER_NAME = 'Stream Default'
-const DEFAULT_CHAMPION_IDS = ['ahri', 'leesin', 'amumu', 'yasuo', 'lillia']
+
+type ShareStatus = 'idle' | 'copied' | 'error'
+
+type ShareLinkConfig = {
+  label: string
+  url: string
+  status: ShareStatus
+  onCopy?: () => void
+}
 
 type AdminState = {
   rosterId: number | null
@@ -27,8 +39,18 @@ type AdminState = {
   savingDonation: boolean
   donationAmount: string
   donationValidationError: string
-  shareLinkStatus: 'idle' | 'copied' | 'error'
+  shareStatuses: Record<'viewer' | 'overlay', ShareStatus>
 }
+
+const mapChampionDto = (champion: ChampionDto): Champion => ({
+  id: champion.id,
+  name: champion.name,
+  imageUrl: champion.imageUrl,
+  role: champion.role,
+  tags: champion.tags ?? [],
+  isActive: champion.isActive,
+  position: champion.position,
+})
 
 const reorder = (list: Champion[], startIndex: number, endIndex: number) => {
   const next = [...list]
@@ -60,18 +82,72 @@ const ChampSelectAdmin = () => {
     savingDonation: false,
     donationAmount: '',
     donationValidationError: '',
-    shareLinkStatus: 'idle',
+    shareStatuses: { viewer: 'idle', overlay: 'idle' },
   })
 
-  const { user } = useAuth()
-  const copyTimeoutRef = useRef<number | null>(null)
+  const [catalog, setCatalog] = useState<Champion[]>([])
+  const [catalogLoading, setCatalogLoading] = useState(true)
+  const [catalogError, setCatalogError] = useState<string | null>(null)
+  const [selectedChampionId, setSelectedChampionId] = useState('')
+  const [addingChampion, setAddingChampion] = useState(false)
+  const [addChampionError, setAddChampionError] = useState<string | null>(null)
+  const [isCatalogOpen, setIsCatalogOpen] = useState(false)
 
-  const shareLink = useMemo(() => {
+  const { user } = useAuth()
+  const copyTimeoutRef = useRef<{ viewer: number | null; overlay: number | null }>({ viewer: null, overlay: null })
+  const dropdownRef = useRef<HTMLDivElement | null>(null)
+
+  const viewerLink = useMemo(() => {
     if (!user || typeof window === 'undefined') {
       return ''
     }
-    return `${window.location.origin}/champ-select/${user.id}`
+    return `${window.location.origin}/champ-select?ownerId=${user.id}`
   }, [user])
+
+  const overlayLink = useMemo(() => {
+    if (!user || typeof window === 'undefined') {
+      return ''
+    }
+    return `${window.location.origin}/overlay?ownerId=${user.id}`
+  }, [user])
+
+  useEffect(() => {
+    if (!user) {
+      setCatalog([])
+      setCatalogLoading(false)
+      return
+    }
+
+    let cancelled = false
+
+    const loadCatalog = async () => {
+      setCatalogLoading(true)
+      try {
+        const data = await fetchChampionCatalog()
+        if (cancelled) {
+          return
+        }
+        setCatalog(data.map(mapChampionDto))
+        setCatalogError(null)
+      } catch (error) {
+        if (cancelled) {
+          return
+        }
+        const message = error instanceof Error ? error.message : 'Failed to load champion catalog.'
+        setCatalogError(message)
+      } finally {
+        if (!cancelled) {
+          setCatalogLoading(false)
+        }
+      }
+    }
+
+    void loadCatalog()
+
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id])
 
   const loadInitialData = useCallback(async () => {
     setState((prev) => ({ ...prev, loading: true, error: null }))
@@ -81,16 +157,9 @@ const ChampSelectAdmin = () => {
       let activeRoster = rosters.find((roster) => roster.isPublic) ?? rosters[0] ?? null
 
       if (!activeRoster) {
-        const availableChampions = await fetchChampions()
-        const seededChampionIds = availableChampions
-          .filter((champ) => champ.isActive)
-          .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-          .map((champ) => champ.id)
-
-        const championIds = seededChampionIds.length > 0 ? seededChampionIds : DEFAULT_CHAMPION_IDS
         activeRoster = await createRoster({
           name: DEFAULT_ROSTER_NAME,
-          championIds,
+          championIds: [],
           isPublic: true,
         })
       }
@@ -107,7 +176,7 @@ const ChampSelectAdmin = () => {
             ? String(donation.defaultAmount)
             : '',
         donationValidationError: '',
-        shareLinkStatus: 'idle',
+        shareStatuses: { viewer: 'idle', overlay: 'idle' },
       })
     } catch (error) {
       setState((prev) => ({
@@ -124,25 +193,32 @@ const ChampSelectAdmin = () => {
 
   useEffect(() => {
     return () => {
-      if (copyTimeoutRef.current != null && typeof window !== 'undefined') {
-        window.clearTimeout(copyTimeoutRef.current)
-        copyTimeoutRef.current = null
+      if (typeof window === 'undefined') {
+        return
       }
+
+      (['viewer', 'overlay'] as const).forEach((key) => {
+        const timeoutId = copyTimeoutRef.current[key]
+        if (timeoutId != null) {
+          window.clearTimeout(timeoutId)
+        }
+        copyTimeoutRef.current[key] = null
+      })
     }
   }, [])
 
-  const handleCopyShareLink = useCallback(async () => {
-    if (!shareLink) {
+  const handleCopyLink = useCallback(async (target: 'viewer' | 'overlay', link: string) => {
+    if (!link) {
       return
     }
 
     try {
       const canUseClipboard = typeof navigator !== 'undefined' && navigator.clipboard?.writeText
       if (canUseClipboard) {
-        await navigator.clipboard.writeText(shareLink)
+        await navigator.clipboard.writeText(link)
       } else if (typeof document !== 'undefined') {
         const textarea = document.createElement('textarea')
-        textarea.value = shareLink
+        textarea.value = link
         textarea.setAttribute('readonly', '')
         textarea.style.position = 'absolute'
         textarea.style.left = '-9999px'
@@ -157,23 +233,146 @@ const ChampSelectAdmin = () => {
         throw new Error('Clipboard API not available')
       }
 
-      setState((prev) => ({ ...prev, shareLinkStatus: 'copied' }))
+      setState((prev) => ({
+        ...prev,
+        shareStatuses: { ...prev.shareStatuses, [target]: 'copied' },
+      }))
 
-      if (copyTimeoutRef.current != null && typeof window !== 'undefined') {
-        window.clearTimeout(copyTimeoutRef.current)
-        copyTimeoutRef.current = null
-      }
       if (typeof window !== 'undefined') {
-        copyTimeoutRef.current = window.setTimeout(() => {
-          setState((current) => ({ ...current, shareLinkStatus: 'idle' }))
-          copyTimeoutRef.current = null
+        const existing = copyTimeoutRef.current[target]
+        if (existing != null) {
+          window.clearTimeout(existing)
+        }
+        copyTimeoutRef.current[target] = window.setTimeout(() => {
+          setState((current) => ({
+            ...current,
+            shareStatuses: { ...current.shareStatuses, [target]: 'idle' },
+          }))
+          copyTimeoutRef.current[target] = null
         }, 2000)
       }
     } catch (error) {
-      console.error('Failed to copy viewer link', error)
-      setState((prev) => ({ ...prev, shareLinkStatus: 'error' }))
+      console.error('Failed to copy share link', error)
+      setState((prev) => ({
+        ...prev,
+        shareStatuses: { ...prev.shareStatuses, [target]: 'error' },
+      }))
     }
-  }, [shareLink])
+  }, [])
+
+  const shareLinks = useMemo<ShareLinkConfig[]>(() => {
+    const links: ShareLinkConfig[] = []
+    if (viewerLink) {
+      links.push({
+        label: 'Viewer Link',
+        url: viewerLink,
+        status: state.shareStatuses.viewer,
+        onCopy: () => handleCopyLink('viewer', viewerLink),
+      })
+    }
+    if (overlayLink) {
+      links.push({
+        label: 'Overlay Link',
+        url: overlayLink,
+        status: state.shareStatuses.overlay,
+        onCopy: () => handleCopyLink('overlay', overlayLink),
+      })
+    }
+    return links
+  }, [viewerLink, overlayLink, state.shareStatuses, handleCopyLink])
+
+  const activeCatalog = useMemo(() => catalog.filter((champ) => champ.isActive !== false), [catalog])
+
+  const rosterChampionIds = useMemo(() => new Set(state.champions.map((champ) => champ.id)), [state.champions])
+
+  const availableChampions = useMemo(() => {
+    return activeCatalog.filter((champ) => !rosterChampionIds.has(champ.id))
+  }, [activeCatalog, rosterChampionIds])
+
+  const selectedChampion = useMemo(
+    () => activeCatalog.find((champ) => champ.id === selectedChampionId) ?? null,
+    [activeCatalog, selectedChampionId],
+  )
+
+  const selectLabel = useMemo(() => {
+    if (catalogLoading) {
+      return 'Loading champions...';
+    }
+    if (!state.rosterId) {
+      return 'Select a roster to add champions';
+    }
+    return 'Choose a Champion';
+  }, [catalogLoading, state.rosterId, availableChampions])
+
+  const selectDisabled = catalogLoading || addingChampion || !state.rosterId
+
+  useEffect(() => {
+    if (selectedChampionId && !availableChampions.some((champ) => champ.id === selectedChampionId)) {
+      setSelectedChampionId('')
+    }
+  }, [selectedChampionId, availableChampions])
+
+  useEffect(() => {
+    if (!isCatalogOpen) {
+      return
+    }
+    if (catalogLoading || !state.rosterId) {
+      setIsCatalogOpen(false)
+    }
+  }, [isCatalogOpen, catalogLoading, state.rosterId])
+
+  useEffect(() => {
+    if (!isCatalogOpen) {
+      return
+    }
+
+    const handleClick = (event: MouseEvent) => {
+      if (!dropdownRef.current || dropdownRef.current.contains(event.target as Node)) {
+        return
+      }
+      setIsCatalogOpen(false)
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsCatalogOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClick)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isCatalogOpen])
+
+  const handleAddChampion = useCallback(() => {
+    if (!state.rosterId || !selectedChampionId || rosterChampionIds.has(selectedChampionId)) {
+      return
+    }
+
+    setAddingChampion(true)
+    setAddChampionError(null)
+
+    void addChampionToRoster(state.rosterId, selectedChampionId)
+      .then((response) => {
+        setState((current) => ({
+          ...current,
+          champions: normalizeChampions(response.champions as Champion[]),
+          error: null,
+        }))
+        setSelectedChampionId('')
+        setIsCatalogOpen(false)
+      })
+      .catch((error) => {
+        console.error('Failed to add champion to roster', error)
+        setAddChampionError(error instanceof Error ? error.message : 'Failed to add champion. Please try again.')
+      })
+      .finally(() => {
+        setAddingChampion(false)
+      })
+  }, [selectedChampionId, state.rosterId, rosterChampionIds])
 
   const handleRemove = useCallback(
     (id: string) => {
@@ -296,13 +495,7 @@ const ChampSelectAdmin = () => {
 
   const donationErrorId = 'donation-amount-error'
 
-  const header = (
-    <AdminHeader
-      shareLink={shareLink}
-      shareLinkStatus={state.shareLinkStatus}
-      onCopyShareLink={shareLink ? handleCopyShareLink : undefined}
-    />
-  )
+  const header = <AdminHeader shareLinks={shareLinks} />
 
   const donationControls = (
     <DonationControls
@@ -314,6 +507,115 @@ const ChampSelectAdmin = () => {
       errorMessage={state.donationValidationError || undefined}
       isSaving={state.savingDonation}
     />
+  )
+
+  const manualAddCard = (
+    <Card className={styles.addCard}>
+      <div className={styles.addHeader}>
+        <Heading level={2}>Add a champion</Heading>
+        <p className={styles.addCopy}>Select a champion to queue them in the roster order.</p>
+      </div>
+      <div className={styles.addControls}>
+        <div className={styles.selectControl} ref={dropdownRef}>
+          <button
+            type="button"
+            role="combobox"
+            className={[
+              styles.selectButton,
+              isCatalogOpen ? styles.selectButtonOpen : undefined,
+              selectDisabled ? styles.selectButtonDisabled : undefined,
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            onClick={() => {
+              if (selectDisabled) {
+                return
+              }
+              setIsCatalogOpen((prev) => !prev)
+            }}
+            disabled={selectDisabled}
+            aria-haspopup="listbox"
+            aria-expanded={isCatalogOpen}
+          >
+            {selectedChampion ? (
+              <span className={styles.selection}>
+                <img
+                  src={selectedChampion.imageUrl}
+                  alt={selectedChampion.name}
+                  className={styles.selectionImage}
+                />
+                <span className={styles.selectionName}>{selectedChampion.name}</span>
+              </span>
+            ) : (
+              <span className={styles.placeholder}>{selectLabel}</span>
+            )}
+            <span
+              className={[styles.chevron, isCatalogOpen ? styles.chevronOpen : undefined]
+                .filter(Boolean)
+                .join(' ')}
+              aria-hidden="true"
+            />
+          </button>
+          {isCatalogOpen ? (
+            <div className={styles.dropdown} role="listbox">
+              <ul className={styles.optionList}>
+                {activeCatalog.map((champ) => {
+                  const isDisabled = rosterChampionIds.has(champ.id)
+                  return (
+                    <li key={champ.id}>
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={champ.id === selectedChampionId}
+                        className={[
+                          styles.optionButton,
+                          isDisabled ? styles.optionButtonDisabled : undefined,
+                          champ.id === selectedChampionId ? styles.optionButtonActive : undefined,
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                        onClick={() => {
+                          if (isDisabled) {
+                            return
+                          }
+                          setSelectedChampionId(champ.id)
+                          setAddChampionError(null)
+                          setIsCatalogOpen(false)
+                        }}
+                        disabled={isDisabled}
+                      >
+                        <img src={champ.imageUrl} alt={champ.name} className={styles.optionImage} />
+                        <span className={styles.optionName}>{champ.name}</span>
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+        <Button
+          type="button"
+          onClick={handleAddChampion}
+          disabled={!selectedChampionId || !state.rosterId || addingChampion || rosterChampionIds.has(selectedChampionId)}
+        >
+          {addingChampion ? 'Adding...' : 'Add Champion'}
+        </Button>
+      </div>
+      {catalogLoading ? <p className={styles.state}>Loading champion catalog...</p> : null}
+      {catalogError ? <InlineError>{catalogError}</InlineError> : null}
+      {addChampionError ? <InlineError>{addChampionError}</InlineError> : null}
+      {!catalogLoading && !catalogError && availableChampions.length === 0 ? (
+        <p className={styles.state}>Every champion in the catalog is already on this roster.</p>
+      ) : null}
+    </Card>
+  )
+
+  const championSection = (
+    <div className={styles.championColumn}>
+      {manualAddCard}
+      <ChampionList champs={state.champions} onReorder={handleReorder} onRemove={handleRemove} />
+    </div>
   )
 
   if (state.loading) {
@@ -340,9 +642,38 @@ const ChampSelectAdmin = () => {
     <AdminLayout
       header={header}
       donation={donationControls}
-      championList={<ChampionList champs={state.champions} onReorder={handleReorder} onRemove={handleRemove} />}
+      championList={championSection}
     />
   )
 }
 
 export default ChampSelectAdmin
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

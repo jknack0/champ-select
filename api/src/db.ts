@@ -1,5 +1,7 @@
 import sqlite3 from 'sqlite3'
 import { open, type Database } from 'sqlite'
+import path from 'path'
+import fs from 'fs/promises'
 
 sqlite3.verbose()
 
@@ -7,37 +9,64 @@ export type AppDatabase = Database<sqlite3.Database, sqlite3.Statement>
 
 let dbInstance: AppDatabase | null = null
 
-const DEFAULT_CHAMPIONS: Array<{ id: string; name: string; image_url: string; role?: string | null; tags?: string[] }> = [
-  { id: 'ahri', name: 'Ahri', image_url: 'https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Ahri.png' },
-  { id: 'leesin', name: 'Lee Sin', image_url: 'https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/LeeSin.png' },
-  { id: 'amumu', name: 'Amumu', image_url: 'https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Amumu.png' },
-  { id: 'yasuo', name: 'Yasuo', image_url: 'https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Yasuo.png' },
-  { id: 'lillia', name: 'Lillia', image_url: 'https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Lillia.png' },
-]
 
-const seedChampionsIfNeeded = async (db: AppDatabase) => {
-  const row = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM champions')
-  if (row?.count) {
+const loadChampionSeedData = async (): Promise<Array<{ id: string; name: string; imageUrl: string; role?: string | null; tags?: string[] }>> => {
+  try {
+    const compiledPath = path.resolve(__dirname, 'data', 'champions.json')
+    const sourcePath = path.resolve(process.cwd(), 'api', 'src', 'data', 'champions.json')
+
+    for (const candidate of [compiledPath, sourcePath]) {
+      try {
+        const file = await fs.readFile(candidate, 'utf-8')
+        return JSON.parse(file)
+      } catch (error) {
+        // ignore and try the next candidate
+      }
+    }
+  } catch (error) {
+    console.warn('Unable to load champion seed data', error)
+  }
+
+  return []
+}
+
+const syncChampionsCatalog = async (db: AppDatabase) => {
+  const champions = await loadChampionSeedData()
+  if (champions.length === 0) {
     return
   }
 
-  const insert = await db.prepare(
-    `INSERT INTO champions (id, name, image_url, role, tags)
-     VALUES (?, ?, ?, ?, ?)`,
-  )
+  for (const champion of champions) {
+    const normalizedId = champion.id.trim().toLowerCase()
+    const tagsValue = champion.tags && champion.tags.length > 0 ? JSON.stringify(champion.tags) : null
 
-  try {
-    for (const champion of DEFAULT_CHAMPIONS) {
-      await insert.run(
-        champion.id,
+    const existing = await db.get('SELECT id FROM champions WHERE id = ?', normalizedId)
+
+    if (!existing) {
+      await db.run(
+        `INSERT INTO champions (id, name, image_url, role, tags) VALUES (?, ?, ?, ?, ?)`,
+        normalizedId,
         champion.name,
-        champion.image_url,
+        champion.imageUrl,
         champion.role ?? null,
-        champion.tags && champion.tags.length > 0 ? JSON.stringify(champion.tags) : null,
+        tagsValue,
+      )
+    } else {
+      await db.run(
+        `UPDATE champions
+           SET name = ?,
+               image_url = ?,
+               role = ?,
+               tags = ?,
+               updated_at = CURRENT_TIMESTAMP
+         WHERE id = ?`,
+        champion.name,
+        champion.imageUrl,
+        champion.role ?? null,
+        tagsValue,
+        normalizedId,
       )
     }
-  } finally {
-    await insert.finalize()
   }
 }
 
@@ -136,7 +165,7 @@ export const getDb = async (): Promise<AppDatabase> => {
     CREATE INDEX IF NOT EXISTS idx_roster_champions_champion ON roster_champions(champion_id);
   `)
 
-  await seedChampionsIfNeeded(dbInstance)
+  await syncChampionsCatalog(dbInstance)
 
   return dbInstance
 }

@@ -1,0 +1,1627 @@
+[
+  {
+    "id": "amumu",
+    "name": "Amumu",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Amumu.png",
+    "tags": [
+      "Tank",
+      "Mage"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "belveth",
+    "name": "Bel'Veth",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Belveth.png",
+    "tags": [
+      "Fighter"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "briar",
+    "name": "Briar",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Briar.png",
+    "tags": [
+      "Fighter",
+      "Assassin"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "diana",
+    "name": "Diana",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Diana.png",
+    "tags": [
+      "Fighter",
+      "Mage"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "ekko",
+    "name": "Ekko",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Ekko.png",
+    "tags": [
+      "Assassin",
+      "Fighter"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "elise",
+    "name": "Elise",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Elise.png",
+    "tags": [
+      "Mage",
+      "Fighter"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "evelynn",
+    "name": "Evelynn",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Evelynn.png",
+    "tags": [
+      "Assassin",
+      "Mage"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "fiddlesticks",
+    "name": "Fiddlesticks",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Fiddlesticks.png",
+    "tags": [
+      "Mage",
+      "Support"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "gragas",
+    "name": "Gragas",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Gragas.png",
+    "tags": [
+      "Fighter",
+      "Mage"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "graves",
+    "name": "Graves",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Graves.png",
+    "tags": [
+      "Marksman"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "hecarim",
+    "name": "Hecarim",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Hecarim.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "ivern",
+    "name": "Ivern",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Ivern.png",
+    "tags": [
+      "Support",
+      "Mage"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "jarvaniv",
+    "name": "Jarvan IV",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/JarvanIV.png",
+    "tags": [
+      "Tank",
+      "Fighter"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "jax",
+    "name": "Jax",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Jax.png",
+    "tags": [
+      "Fighter",
+      "Assassin"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "karthus",
+    "name": "Karthus",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Karthus.png",
+    "tags": [
+      "Mage"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "kayn",
+    "name": "Kayn",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Kayn.png",
+    "tags": [
+      "Fighter",
+      "Assassin"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "khazix",
+    "name": "Kha'Zix",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Khazix.png",
+    "tags": [
+      "Assassin"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "kindred",
+    "name": "Kindred",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Kindred.png",
+    "tags": [
+      "Marksman"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "leesin",
+    "name": "Lee Sin",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/LeeSin.png",
+    "tags": [
+      "Fighter",
+      "Assassin"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "lillia",
+    "name": "Lillia",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Lillia.png",
+    "tags": [
+      "Fighter",
+      "Mage"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "maokai",
+    "name": "Maokai",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Maokai.png",
+    "tags": [
+      "Tank",
+      "Mage"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "masteryi",
+    "name": "Master Yi",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/MasterYi.png",
+    "tags": [
+      "Assassin",
+      "Fighter"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "naafiri",
+    "name": "Naafiri",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Naafiri.png",
+    "tags": [
+      "Assassin"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "nidalee",
+    "name": "Nidalee",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Nidalee.png",
+    "tags": [
+      "Assassin",
+      "Mage"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "nocturne",
+    "name": "Nocturne",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Nocturne.png",
+    "tags": [
+      "Assassin",
+      "Fighter"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "nunu",
+    "name": "Nunu & Willump",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Nunu.png",
+    "tags": [
+      "Tank",
+      "Fighter"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "olaf",
+    "name": "Olaf",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Olaf.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "pantheon",
+    "name": "Pantheon",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Pantheon.png",
+    "tags": [
+      "Fighter",
+      "Assassin"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "poppy",
+    "name": "Poppy",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Poppy.png",
+    "tags": [
+      "Tank",
+      "Fighter"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "pyke",
+    "name": "Pyke",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Pyke.png",
+    "tags": [
+      "Support",
+      "Assassin"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "rammus",
+    "name": "Rammus",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Rammus.png",
+    "tags": [
+      "Tank",
+      "Fighter"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "reksai",
+    "name": "Rek'Sai",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/RekSai.png",
+    "tags": [
+      "Fighter"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "rengar",
+    "name": "Rengar",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Rengar.png",
+    "tags": [
+      "Assassin",
+      "Fighter"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "rumble",
+    "name": "Rumble",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Rumble.png",
+    "tags": [
+      "Fighter",
+      "Mage"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "sejuani",
+    "name": "Sejuani",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Sejuani.png",
+    "tags": [
+      "Tank",
+      "Fighter"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "shaco",
+    "name": "Shaco",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Shaco.png",
+    "tags": [
+      "Assassin"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "shyvana",
+    "name": "Shyvana",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Shyvana.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "skarner",
+    "name": "Skarner",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Skarner.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "taliyah",
+    "name": "Taliyah",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Taliyah.png",
+    "tags": [
+      "Mage",
+      "Support"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "talon",
+    "name": "Talon",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Talon.png",
+    "tags": [
+      "Assassin"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "trundle",
+    "name": "Trundle",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Trundle.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "udyr",
+    "name": "Udyr",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Udyr.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "vi",
+    "name": "Vi",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Vi.png",
+    "tags": [
+      "Fighter",
+      "Assassin"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "viego",
+    "name": "Viego",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Viego.png",
+    "tags": [
+      "Assassin",
+      "Fighter"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "volibear",
+    "name": "Volibear",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Volibear.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "warwick",
+    "name": "Warwick",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Warwick.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "xinzhao",
+    "name": "Xin Zhao",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/XinZhao.png",
+    "tags": [
+      "Fighter",
+      "Assassin"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "zac",
+    "name": "Zac",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Zac.png",
+    "tags": [
+      "Tank",
+      "Fighter"
+    ],
+    "role": "jungle"
+  },
+  {
+    "id": "aatrox",
+    "name": "Aatrox",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Aatrox.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "ahri",
+    "name": "Ahri",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Ahri.png",
+    "tags": [
+      "Mage",
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "akali",
+    "name": "Akali",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Akali.png",
+    "tags": [
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "akshan",
+    "name": "Akshan",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Akshan.png",
+    "tags": [
+      "Marksman",
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "alistar",
+    "name": "Alistar",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Alistar.png",
+    "tags": [
+      "Tank",
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "anivia",
+    "name": "Anivia",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Anivia.png",
+    "tags": [
+      "Mage",
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "annie",
+    "name": "Annie",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Annie.png",
+    "tags": [
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "aphelios",
+    "name": "Aphelios",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Aphelios.png",
+    "tags": [
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "ashe",
+    "name": "Ashe",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Ashe.png",
+    "tags": [
+      "Marksman",
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "aurelionsol",
+    "name": "Aurelion Sol",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/AurelionSol.png",
+    "tags": [
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "azir",
+    "name": "Azir",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Azir.png",
+    "tags": [
+      "Mage",
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "bard",
+    "name": "Bard",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Bard.png",
+    "tags": [
+      "Support",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "blitzcrank",
+    "name": "Blitzcrank",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Blitzcrank.png",
+    "tags": [
+      "Tank",
+      "Fighter"
+    ],
+    "role": null
+  },
+  {
+    "id": "brand",
+    "name": "Brand",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Brand.png",
+    "tags": [
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "braum",
+    "name": "Braum",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Braum.png",
+    "tags": [
+      "Support",
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "caitlyn",
+    "name": "Caitlyn",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Caitlyn.png",
+    "tags": [
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "camille",
+    "name": "Camille",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Camille.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "cassiopeia",
+    "name": "Cassiopeia",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Cassiopeia.png",
+    "tags": [
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "chogath",
+    "name": "Cho'Gath",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Chogath.png",
+    "tags": [
+      "Tank",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "corki",
+    "name": "Corki",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Corki.png",
+    "tags": [
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "darius",
+    "name": "Darius",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Darius.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "drmundo",
+    "name": "Dr. Mundo",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/DrMundo.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "draven",
+    "name": "Draven",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Draven.png",
+    "tags": [
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "ezreal",
+    "name": "Ezreal",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Ezreal.png",
+    "tags": [
+      "Marksman",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "fiora",
+    "name": "Fiora",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Fiora.png",
+    "tags": [
+      "Fighter",
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "fizz",
+    "name": "Fizz",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Fizz.png",
+    "tags": [
+      "Assassin",
+      "Fighter"
+    ],
+    "role": null
+  },
+  {
+    "id": "galio",
+    "name": "Galio",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Galio.png",
+    "tags": [
+      "Tank",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "gangplank",
+    "name": "Gangplank",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Gangplank.png",
+    "tags": [
+      "Fighter"
+    ],
+    "role": null
+  },
+  {
+    "id": "garen",
+    "name": "Garen",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Garen.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "gnar",
+    "name": "Gnar",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Gnar.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "gwen",
+    "name": "Gwen",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Gwen.png",
+    "tags": [
+      "Fighter",
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "heimerdinger",
+    "name": "Heimerdinger",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Heimerdinger.png",
+    "tags": [
+      "Mage",
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "hwei",
+    "name": "Hwei",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Hwei.png",
+    "tags": [
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "illaoi",
+    "name": "Illaoi",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Illaoi.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "irelia",
+    "name": "Irelia",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Irelia.png",
+    "tags": [
+      "Fighter",
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "janna",
+    "name": "Janna",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Janna.png",
+    "tags": [
+      "Support",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "jayce",
+    "name": "Jayce",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Jayce.png",
+    "tags": [
+      "Fighter",
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "jhin",
+    "name": "Jhin",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Jhin.png",
+    "tags": [
+      "Marksman",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "jinx",
+    "name": "Jinx",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Jinx.png",
+    "tags": [
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "ksante",
+    "name": "K'Sante",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/KSante.png",
+    "tags": [
+      "Tank",
+      "Fighter"
+    ],
+    "role": null
+  },
+  {
+    "id": "kaisa",
+    "name": "Kai'Sa",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Kaisa.png",
+    "tags": [
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "kalista",
+    "name": "Kalista",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Kalista.png",
+    "tags": [
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "karma",
+    "name": "Karma",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Karma.png",
+    "tags": [
+      "Mage",
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "kassadin",
+    "name": "Kassadin",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Kassadin.png",
+    "tags": [
+      "Assassin",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "katarina",
+    "name": "Katarina",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Katarina.png",
+    "tags": [
+      "Assassin",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "kayle",
+    "name": "Kayle",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Kayle.png",
+    "tags": [
+      "Fighter",
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "kennen",
+    "name": "Kennen",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Kennen.png",
+    "tags": [
+      "Mage",
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "kled",
+    "name": "Kled",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Kled.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "kogmaw",
+    "name": "Kog'Maw",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/KogMaw.png",
+    "tags": [
+      "Marksman",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "leblanc",
+    "name": "LeBlanc",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Leblanc.png",
+    "tags": [
+      "Assassin",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "leona",
+    "name": "Leona",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Leona.png",
+    "tags": [
+      "Tank",
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "lissandra",
+    "name": "Lissandra",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Lissandra.png",
+    "tags": [
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "lucian",
+    "name": "Lucian",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Lucian.png",
+    "tags": [
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "lulu",
+    "name": "Lulu",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Lulu.png",
+    "tags": [
+      "Support",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "lux",
+    "name": "Lux",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Lux.png",
+    "tags": [
+      "Mage",
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "malphite",
+    "name": "Malphite",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Malphite.png",
+    "tags": [
+      "Tank",
+      "Fighter"
+    ],
+    "role": null
+  },
+  {
+    "id": "malzahar",
+    "name": "Malzahar",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Malzahar.png",
+    "tags": [
+      "Mage",
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "milio",
+    "name": "Milio",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Milio.png",
+    "tags": [
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "missfortune",
+    "name": "Miss Fortune",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/MissFortune.png",
+    "tags": [
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "mordekaiser",
+    "name": "Mordekaiser",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Mordekaiser.png",
+    "tags": [
+      "Fighter"
+    ],
+    "role": null
+  },
+  {
+    "id": "morgana",
+    "name": "Morgana",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Morgana.png",
+    "tags": [
+      "Mage",
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "nami",
+    "name": "Nami",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Nami.png",
+    "tags": [
+      "Support",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "nasus",
+    "name": "Nasus",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Nasus.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "nautilus",
+    "name": "Nautilus",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Nautilus.png",
+    "tags": [
+      "Tank",
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "neeko",
+    "name": "Neeko",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Neeko.png",
+    "tags": [
+      "Mage",
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "nilah",
+    "name": "Nilah",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Nilah.png",
+    "tags": [
+      "Fighter",
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "orianna",
+    "name": "Orianna",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Orianna.png",
+    "tags": [
+      "Mage",
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "ornn",
+    "name": "Ornn",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Ornn.png",
+    "tags": [
+      "Tank",
+      "Fighter"
+    ],
+    "role": null
+  },
+  {
+    "id": "qiyana",
+    "name": "Qiyana",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Qiyana.png",
+    "tags": [
+      "Assassin",
+      "Fighter"
+    ],
+    "role": null
+  },
+  {
+    "id": "quinn",
+    "name": "Quinn",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Quinn.png",
+    "tags": [
+      "Marksman",
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "rakan",
+    "name": "Rakan",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Rakan.png",
+    "tags": [
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "rell",
+    "name": "Rell",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Rell.png",
+    "tags": [
+      "Tank",
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "renata",
+    "name": "Renata Glasc",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Renata.png",
+    "tags": [
+      "Support",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "renekton",
+    "name": "Renekton",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Renekton.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "riven",
+    "name": "Riven",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Riven.png",
+    "tags": [
+      "Fighter",
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "ryze",
+    "name": "Ryze",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Ryze.png",
+    "tags": [
+      "Mage",
+      "Fighter"
+    ],
+    "role": null
+  },
+  {
+    "id": "samira",
+    "name": "Samira",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Samira.png",
+    "tags": [
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "senna",
+    "name": "Senna",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Senna.png",
+    "tags": [
+      "Marksman",
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "seraphine",
+    "name": "Seraphine",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Seraphine.png",
+    "tags": [
+      "Mage",
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "sett",
+    "name": "Sett",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Sett.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "shen",
+    "name": "Shen",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Shen.png",
+    "tags": [
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "singed",
+    "name": "Singed",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Singed.png",
+    "tags": [
+      "Tank",
+      "Fighter"
+    ],
+    "role": null
+  },
+  {
+    "id": "sion",
+    "name": "Sion",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Sion.png",
+    "tags": [
+      "Tank",
+      "Fighter"
+    ],
+    "role": null
+  },
+  {
+    "id": "sivir",
+    "name": "Sivir",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Sivir.png",
+    "tags": [
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "smolder",
+    "name": "Smolder",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Smolder.png",
+    "tags": [
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "sona",
+    "name": "Sona",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Sona.png",
+    "tags": [
+      "Support",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "soraka",
+    "name": "Soraka",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Soraka.png",
+    "tags": [
+      "Support",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "swain",
+    "name": "Swain",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Swain.png",
+    "tags": [
+      "Mage",
+      "Fighter"
+    ],
+    "role": null
+  },
+  {
+    "id": "sylas",
+    "name": "Sylas",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Sylas.png",
+    "tags": [
+      "Mage",
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "syndra",
+    "name": "Syndra",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Syndra.png",
+    "tags": [
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "tahmkench",
+    "name": "Tahm Kench",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/TahmKench.png",
+    "tags": [
+      "Support",
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "taric",
+    "name": "Taric",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Taric.png",
+    "tags": [
+      "Support",
+      "Fighter"
+    ],
+    "role": null
+  },
+  {
+    "id": "teemo",
+    "name": "Teemo",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Teemo.png",
+    "tags": [
+      "Marksman",
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "thresh",
+    "name": "Thresh",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Thresh.png",
+    "tags": [
+      "Support",
+      "Fighter"
+    ],
+    "role": null
+  },
+  {
+    "id": "tristana",
+    "name": "Tristana",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Tristana.png",
+    "tags": [
+      "Marksman",
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "tryndamere",
+    "name": "Tryndamere",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Tryndamere.png",
+    "tags": [
+      "Fighter",
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "twistedfate",
+    "name": "Twisted Fate",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/TwistedFate.png",
+    "tags": [
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "twitch",
+    "name": "Twitch",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Twitch.png",
+    "tags": [
+      "Marksman",
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "urgot",
+    "name": "Urgot",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Urgot.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "varus",
+    "name": "Varus",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Varus.png",
+    "tags": [
+      "Marksman",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "vayne",
+    "name": "Vayne",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Vayne.png",
+    "tags": [
+      "Marksman",
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "veigar",
+    "name": "Veigar",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Veigar.png",
+    "tags": [
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "velkoz",
+    "name": "Vel'Koz",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Velkoz.png",
+    "tags": [
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "vex",
+    "name": "Vex",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Vex.png",
+    "tags": [
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "viktor",
+    "name": "Viktor",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Viktor.png",
+    "tags": [
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "vladimir",
+    "name": "Vladimir",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Vladimir.png",
+    "tags": [
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "monkeyking",
+    "name": "Wukong",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/MonkeyKing.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "xayah",
+    "name": "Xayah",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Xayah.png",
+    "tags": [
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "xerath",
+    "name": "Xerath",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Xerath.png",
+    "tags": [
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "yasuo",
+    "name": "Yasuo",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Yasuo.png",
+    "tags": [
+      "Fighter",
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "yone",
+    "name": "Yone",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Yone.png",
+    "tags": [
+      "Assassin",
+      "Fighter"
+    ],
+    "role": null
+  },
+  {
+    "id": "yorick",
+    "name": "Yorick",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Yorick.png",
+    "tags": [
+      "Fighter",
+      "Tank"
+    ],
+    "role": null
+  },
+  {
+    "id": "yuumi",
+    "name": "Yuumi",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Yuumi.png",
+    "tags": [
+      "Support",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "zed",
+    "name": "Zed",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Zed.png",
+    "tags": [
+      "Assassin"
+    ],
+    "role": null
+  },
+  {
+    "id": "zeri",
+    "name": "Zeri",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Zeri.png",
+    "tags": [
+      "Marksman"
+    ],
+    "role": null
+  },
+  {
+    "id": "ziggs",
+    "name": "Ziggs",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Ziggs.png",
+    "tags": [
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "zilean",
+    "name": "Zilean",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Zilean.png",
+    "tags": [
+      "Support",
+      "Mage"
+    ],
+    "role": null
+  },
+  {
+    "id": "zoe",
+    "name": "Zoe",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Zoe.png",
+    "tags": [
+      "Mage",
+      "Support"
+    ],
+    "role": null
+  },
+  {
+    "id": "zyra",
+    "name": "Zyra",
+    "imageUrl": "https://ddragon.leagueoflegends.com/cdn/14.9.1/img/champion/Zyra.png",
+    "tags": [
+      "Mage",
+      "Support"
+    ],
+    "role": null
+  }
+]

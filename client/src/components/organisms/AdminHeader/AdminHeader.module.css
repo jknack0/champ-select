@@ -1,7 +1,13 @@
-﻿.header {
+.header {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+.shareList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .shareSection {

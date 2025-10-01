@@ -12,6 +12,12 @@ import {
   type StreamlabsStatusDto,
 } from '../../../lib/endpoints'
 
+const STORAGE_KEYS = {
+  streamlabsUrl: 'champ-select-admin:streamlabsUrl',
+  streamlabsToken: 'champ-select-admin:streamlabsToken',
+} as const
+
+
 type TouchedState = {
   url?: boolean
   token?: boolean
@@ -42,7 +48,17 @@ const validateToken = (value: string): string | undefined => {
 }
 
 const Settings = () => {
-  const [streamlabsUrl, setStreamlabsUrl] = useState('')
+  const [streamlabsUrl, setStreamlabsUrl] = useState(() => {
+    if (typeof window === 'undefined') {
+      return ''
+    }
+    try {
+      return window.localStorage.getItem(STORAGE_KEYS.streamlabsUrl) ?? ''
+    } catch (error) {
+      console.warn('Failed to read Streamlabs URL from storage', error)
+      return ''
+    }
+  })
   const [streamlabsToken, setStreamlabsToken] = useState('')
   const [touched, setTouched] = useState<TouchedState>({})
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
@@ -66,8 +82,18 @@ const Settings = () => {
 
         if (donation) {
           setDonationSettings(donation)
-          if (donation.streamlabsUrl) {
-            setStreamlabsUrl(donation.streamlabsUrl)
+          const nextUrl = typeof donation.streamlabsUrl === 'string' ? donation.streamlabsUrl.trim() : ''
+          setStreamlabsUrl(nextUrl)
+          if (typeof window !== 'undefined') {
+            try {
+              if (nextUrl) {
+                window.localStorage.setItem(STORAGE_KEYS.streamlabsUrl, nextUrl)
+              } else {
+                window.localStorage.removeItem(STORAGE_KEYS.streamlabsUrl)
+              }
+            } catch (error) {
+              console.warn('Failed to persist Streamlabs URL to storage', error)
+            }
           }
         }
         if (creds) {
@@ -118,20 +144,48 @@ const Settings = () => {
 
     setStatus('saving')
     try {
+      const trimmedUrl = streamlabsUrl.trim()
+      const trimmedToken = streamlabsToken.trim()
       const payload: Partial<DonationSettingsDto> = {
-        streamlabsUrl: streamlabsUrl.trim(),
+        streamlabsUrl: trimmedUrl,
         defaultAmount: donationSettings?.defaultAmount ?? null,
         currency: donationSettings?.currency ?? 'USD',
       }
 
       const [updatedDonation, updatedStatus] = await Promise.all([
         upsertDonationSettings(payload),
-        upsertStreamlabsCredentials({ accessToken: streamlabsToken.trim() }),
+        upsertStreamlabsCredentials({ accessToken: trimmedToken }),
       ])
 
       setDonationSettings(updatedDonation)
       setStreamlabsStatus(updatedStatus)
+
+      const nextUrl = typeof updatedDonation.streamlabsUrl === 'string' ? updatedDonation.streamlabsUrl.trim() : trimmedUrl
+      setStreamlabsUrl(nextUrl)
+
+      if (typeof window !== 'undefined') {
+        try {
+          if (nextUrl) {
+            window.localStorage.setItem(STORAGE_KEYS.streamlabsUrl, nextUrl)
+          } else {
+            window.localStorage.removeItem(STORAGE_KEYS.streamlabsUrl)
+          }
+        } catch (storageError) {
+          console.warn('Failed to persist Streamlabs URL to storage', storageError)
+        }
+        try {
+          if (trimmedToken) {
+            window.localStorage.setItem(STORAGE_KEYS.streamlabsToken, trimmedToken)
+          } else {
+            window.localStorage.removeItem(STORAGE_KEYS.streamlabsToken)
+          }
+        } catch (storageError) {
+          console.warn('Failed to persist Streamlabs token to storage', storageError)
+        }
+      }
+
       setStreamlabsToken('')
+      setTouched((prev) => ({ ...prev, token: false }))
       setStatus('saved')
     } catch (error) {
       console.error('Failed to update settings', error)
@@ -142,13 +196,21 @@ const Settings = () => {
   const handleRemoveCredentials = async () => {
     try {
       await deleteStreamlabsCredentials()
+      if (typeof window !== 'undefined') {
+        try {
+          window.localStorage.removeItem(STORAGE_KEYS.streamlabsToken)
+        } catch (storageError) {
+          console.warn('Failed to remove Streamlabs token from storage', storageError)
+        }
+      }
+      setStreamlabsToken('')
+      setTouched((prev) => ({ ...prev, token: false }))
       setStreamlabsStatus({ hasCredentials: false, tokenExpiresAt: null })
       setStatus('idle')
     } catch (error) {
       console.error('Failed to delete Streamlabs credentials', error)
     }
   }
-
   return (
     <div className={styles.page}>
       <div className={styles.container}>
@@ -196,7 +258,7 @@ const Settings = () => {
             </div>
             <div className={styles.actions}>
               <Button type="submit" disabled={status === 'saving'}>
-                {status === 'saving' ? 'Saving…' : 'Save Settings'}
+                {status === 'saving' ? 'Saving...' : 'Save Settings'}
               </Button>
               {streamlabsStatus?.hasCredentials ? (
                 <Button variant="ghost" type="button" onClick={handleRemoveCredentials}>
@@ -224,6 +286,8 @@ const BodyCopy = ({ children }: { children: ReactNode }) => (
 )
 
 export default Settings
+
+
 
 
 

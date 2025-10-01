@@ -1,0 +1,234 @@
+
+  :root {
+    color-scheme: light;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  .champ-select-page {
+    min-height: 100vh;
+    margin: 0;
+    background: #f1f4f9;
+    color: #1f2937;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 48px;
+  }
+
+  .champ-select-container {
+    width: min(900px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .text {
+    margin: 0;
+    color: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .text-muted {
+    color: #6b7280;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    padding: 0.2rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .badge-default {
+    background: #eef2ff;
+    color: #3730a3;
+  }
+
+  .badge-info {
+    background: #dbeafe;
+    color: #1d4ed8;
+  }
+
+  .badge-success {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .badge-warning {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .donation-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .donation-bar-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .donation-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .champion-grid {
+    display: grid;
+    gap: 16px;
+  }
+
+  @media (min-width: 520px) {
+    .champion-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 768px) {
+    .champion-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .champion-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .champion-card {
+    position: relative;
+    padding: 0;
+    overflow: hidden;
+  }
+  .champion-card-body,
+  .champion-card-action {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 12px;
+  }
+
+  .champion-card-action {
+    width: 100%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    align-items: stretch;
+  }
+
+  .champion-card-action:focus-visible {
+    outline: 3px solid #2563eb;
+    outline-offset: 2px;
+  }
+
+  .champion-card-action:hover {
+    background: rgba(37, 99, 235, 0.06);
+  }
+
+  .champion-card.clickable {
+    border-color: #cbd5f5;
+  }
+
+  .champion-card.selected {
+    border-color: #2563eb;
+    box-shadow: 0 12px 32px rgba(37, 99, 235, 0.15);
+  }
+
+  .champion-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .champion-card-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    text-align: center;
+  }
+
+  .champion-card-footer {
+    display: flex;
+    justify-content: center;
+  }
+
+  .waiting-room {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .waiting-room-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid #bfdbfe;
+    border-top-color: #2563eb;
+    animation: spin 0.9s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .layout-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .selection-banner {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .selection-banner-body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .selection-banner-champion {
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+

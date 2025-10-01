@@ -1,324 +1,511 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { Avatar, Button, Card, Heading } from '../../atoms'
-import styles from './ChampSelect.module.css'
-import { fetchPublicRoster, type ChampionDto, type DonationSettingsDto } from '../../../lib/endpoints'
-import { getRealtimeSocket } from '../../../lib/realtime'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { io, type Socket } from 'socket.io-client'
+import { fetchPublicRoster } from '../../../lib/endpoints'
+import DonationBar from '../../molecules/DonationBar/DonationBar'
+import ChampionGrid from '../../organisms/ChampionGrid/ChampionGrid'
+import WaitingRoom from '../../organisms/WaitingRoom/WaitingRoom'
+import PublicHeader from '../../organisms/PublicHeader/PublicHeader'
+import SelectionBanner from '../../organisms/SelectionBanner/SelectionBanner'
+import ChampSelectPublicLayout from '../../templates/ChampSelectPublicLayout/ChampSelectPublicLayout'
+import './ChampSelect.css'
+import type { Champion, Selection, ViewState } from './types'
+import {
+  amountsEqual,
+  extractDonationAmount,
+  formatAmount,
+  parseChampionList,
+  parseValidAmount,
+  readChampionsFromStorage,
+  readSelectionFromStorage as readStoredSelection,
+  readStringFromStorage,
+} from './utils'
 
-import { useParams } from 'react-router-dom'
+const INITIAL_CHAMPIONS: Champion[] = [
+  { id: 'ahri', name: 'Ahri', img: 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Ahri_0.jpg' },
+  { id: 'akali', name: 'Akali', img: 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Akali_0.jpg' },
+  { id: 'ashe', name: 'Ashe', img: 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Ashe_0.jpg' },
+  { id: 'ekko', name: 'Ekko', img: 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Ekko_0.jpg' },
+  { id: 'jinx', name: 'Jinx', img: 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Jinx_0.jpg' },
+  { id: 'lux', name: 'Lux', img: 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Lux_0.jpg' },
+  { id: 'thresh', name: 'Thresh', img: 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Thresh_0.jpg' },
+  { id: 'vayne', name: 'Vayne', img: 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Vayne_0.jpg' },
+]
 
-const DONATION_URL_FALLBACK = 'https://streamlabs.com/<your-channel>/tip'
+const DONATION_URL_BASE = 'https://streamlabs.com/<your-channel>/tip'
+const STREAMLABS_SOCKET_URL = 'https://sockets.streamlabs.com'
+const STORAGE_KEYS = {
+  champions: 'champ-select-admin:champions',
+  donationAmount: 'champ-select-admin:donationAmount',
+  selectedChampion: 'champ-select:selectedChampion',
+  streamlabsUrl: 'champ-select-admin:streamlabsUrl',
+  streamlabsToken: 'champ-select-admin:streamlabsToken',
+} as const
 
-const cx = (...values: Array<string | null | undefined | false>) => values.filter(Boolean).join(' ')
+const CHANNEL_NAME = 'champ-select:channel'
 
-const openDonationUrl = (href: string) => {
-  if (!href) {
-    return
-  }
-  window.open(href, '_blank', 'noopener,noreferrer')
+type StreamlabsSocketEvent = {
+  ['for']?: string | null
+  type?: string | null
+  message?: unknown
 }
+// Page
 
-type BodyTextProps = {
-  children: ReactNode
-  as?: 'p' | 'span'
-  tone?: 'default' | 'muted'
-  className?: string
-}
+const ChampSelect = () => {
+  const [champs, setChamps] = useState<Champion[]>(() => readChampionsFromStorage(STORAGE_KEYS.champions, INITIAL_CHAMPIONS))
+  const [donationAmount, setDonationAmount] = useState<string>(() => readStringFromStorage(STORAGE_KEYS.donationAmount))
+  const [streamlabsUrl, setStreamlabsUrl] = useState<string>(() => readStringFromStorage(STORAGE_KEYS.streamlabsUrl))
+  const [streamlabsToken, setStreamlabsToken] = useState<string>(() => readStringFromStorage(STORAGE_KEYS.streamlabsToken))
+  const [selectedChampion, setSelectedChampion] = useState<Selection | null>(() => readStoredSelection(STORAGE_KEYS.selectedChampion))
+  const [view, setView] = useState<ViewState>('idle')
+  const [socketConnected, setSocketConnected] = useState(false)
+  const [lastEventAt, setLastEventAt] = useState<string | undefined>(undefined)
 
-const BodyText = ({ children, as = 'p', tone = 'default', className }: BodyTextProps) => {
-  const Element = as
-  return <Element className={cx(styles.body, tone === 'muted' ? styles.bodyMuted : undefined, className)}>{children}</Element>
-}
-
-type BadgeProps = {
-  children: ReactNode
-  tone?: 'default' | 'info'
-  className?: string
-}
-
-const Badge = ({ children, tone = 'default', className }: BadgeProps) => (
-  <span className={cx(styles.badge, tone === 'info' ? styles.badgeInfo : styles.badgeDefault, className)}>{children}</span>
-)
-
-type DonationBarProps = {
-  amountLabel: string
-  donationUrl: string
-  buttonLabel: string
-  buttonAriaLabel: string
-  hasPrefilledAmount: boolean
-  isDisabled?: boolean
-}
-
-const DonationBar = ({ amountLabel, donationUrl, buttonLabel, buttonAriaLabel, hasPrefilledAmount, isDisabled }: DonationBarProps) => (
-  <Card className={styles.donationCard}>
-    <div className={styles.donation}>
-      <div className={styles.donationMeta}>
-        <div className={styles.donationHeader}>
-          <Heading level={2}>Support the stream</Heading>
-          {hasPrefilledAmount ? <Badge tone="info">{amountLabel}</Badge> : null}
-        </div>
-        <BodyText tone="muted">Keep Champ Select open to every summoner by tipping what feels right.</BodyText>
-        {hasPrefilledAmount ? (
-          <div className={styles.donationPrefill}>
-            <BodyText as="span" tone="muted">
-              Prefilled amount
-            </BodyText>
-            <Badge>{amountLabel}</Badge>
-          </div>
-        ) : null}
-      </div>
-      <div className={styles.donationAction}>
-        <Button onClick={() => openDonationUrl(donationUrl)} ariaLabel={buttonAriaLabel} disabled={isDisabled}>
-          {buttonLabel}
-        </Button>
-      </div>
-    </div>
-  </Card>
-)
-
-type ChampionListItemProps = {
-  champ: ChampionDto
-}
-
-const ChampionListItem = ({ champ }: ChampionListItemProps) => (
-  <li className={styles.championListItem}>
-    <Avatar name={champ.name} src={champ.imageUrl} />
-    <div className={styles.championDetails}>
-      <Heading level={3} className={styles.championName}>
-        {champ.name}
-      </Heading>
-      <BodyText as="span" tone="muted" className={styles.championId}>
-        #{champ.id}
-      </BodyText>
-    </div>
-  </li>
-)
-
-type ChampionListProps = {
-  champs: ChampionDto[]
-}
-
-const ChampionList = ({ champs }: ChampionListProps) => (
-  <Card className={styles.championList}>
-    <ul className={styles.championListItems}>
-      {champs.map((champ) => (
-        <ChampionListItem key={champ.id} champ={champ} />
-      ))}
-    </ul>
-  </Card>
-)
-
-const PublicHeader = () => (
-  <div className={styles.header}>
-    <Heading level={1} className={styles.pageTitle}>
-      Champ Select
-    </Heading>
-    <BodyText tone="muted">Browse the current roster and cheer on your favorite champion.</BodyText>
-  </div>
-)
-
-type PublicLayoutProps = {
-  header: ReactNode
-  donationBar: ReactNode
-  championList: ReactNode
-}
-
-const PublicLayout = ({ header, donationBar, championList }: PublicLayoutProps) => (
-  <div className={styles.page}>
-    <div className={styles.container}>
-      <div className={styles.template}>
-        {header}
-        {donationBar}
-        {championList}
-      </div>
-    </div>
-  </div>
-)
-
-type RosterState = {
-  champions: ChampionDto[]
-  donationSettings: DonationSettingsDto | null
-  loading: boolean
-  error: string | null
-}
-
-const formatAmountLabel = (value: number | null | undefined, currency: string) => {
-  if (value == null || Number.isNaN(value)) {
-    return ''
-  }
-  const formatter = new Intl.NumberFormat(undefined, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-  return formatter.format(value)
-}
-
-const buildDonationUrl = (settings: DonationSettingsDto | null, fallbackAmount: string) => {
-  const base = settings?.streamlabsUrl?.trim() || DONATION_URL_FALLBACK
-  if (fallbackAmount) {
-    const separator = base.includes('?') ? '&' : '?'
-    return `${base}${separator}amount=${encodeURIComponent(fallbackAmount)}`
-  }
-  return base
-}
-
-export default function ChampSelect() {
-  const [state, setState] = useState<RosterState>({
-    champions: [],
-    donationSettings: null,
-    loading: true,
-    error: null,
-  })
-
-  const { ownerId } = useParams<{ ownerId?: string }>()
+  const socketRef = useRef<Socket | null>(null)
+  const broadcastRef = useRef<BroadcastChannel | null>(null)
+  const donationAmountRef = useRef<string>(donationAmount)
 
   useEffect(() => {
-    if (typeof document === 'undefined') {
+    donationAmountRef.current = donationAmount
+  }, [donationAmount])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const resolveOwnerId = () => {
+      if (typeof window === 'undefined') {
+        return null
+      }
+      const params = new URLSearchParams(window.location.search)
+      const value = params.get('ownerId')
+      return value && value.trim() ? value.trim() : null
+    }
+
+    const loadRoster = async () => {
+      try {
+        const ownerId = resolveOwnerId()
+        const response = await fetchPublicRoster(ownerId ?? undefined)
+        if (cancelled) {
+          return
+        }
+
+        const nextChamps = Array.isArray(response.champions)
+          ? response.champions.reduce<Champion[]>((acc, champ) => {
+              if (champ?.id && champ?.name) {
+                acc.push({
+                  id: champ.id,
+                  name: champ.name,
+                  img: champ.imageUrl,
+                })
+              }
+              return acc
+            }, [])
+          : []
+
+        setChamps(nextChamps)
+
+        if (typeof window !== 'undefined') {
+          try {
+            if (nextChamps.length) {
+              window.localStorage.setItem(STORAGE_KEYS.champions, JSON.stringify(nextChamps))
+            } else {
+              window.localStorage.removeItem(STORAGE_KEYS.champions)
+            }
+          } catch (storageError) {
+            console.warn('Failed to persist champions', storageError)
+          }
+        }
+
+        const defaultAmount = response.donationSettings?.defaultAmount
+        if (typeof defaultAmount === 'number' && Number.isFinite(defaultAmount)) {
+          const amountString = defaultAmount.toString()
+          setDonationAmount(amountString)
+          donationAmountRef.current = amountString
+          if (typeof window !== 'undefined') {
+            try {
+              window.localStorage.setItem(STORAGE_KEYS.donationAmount, amountString)
+            } catch (storageError) {
+              console.warn('Failed to persist donation amount', storageError)
+            }
+          }
+        }
+
+        const remoteUrl = response.donationSettings?.streamlabsUrl?.trim()
+        if (remoteUrl) {
+          setStreamlabsUrl(remoteUrl)
+          if (typeof window !== 'undefined') {
+            try {
+              window.localStorage.setItem(STORAGE_KEYS.streamlabsUrl, remoteUrl)
+            } catch (storageError) {
+              console.warn('Failed to persist Streamlabs URL from settings', storageError)
+            }
+          }
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.warn('Failed to load public roster', error)
+        }
+      }
+    }
+
+    void loadRoster()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+    if (typeof BroadcastChannel === 'undefined') {
+      return
+    }
+    const channel = new BroadcastChannel(CHANNEL_NAME)
+    broadcastRef.current = channel
+
+    const handleMessage = (event: MessageEvent) => {
+      const data = event.data
+      if (!data || typeof data !== 'object') {
+        return
+      }
+      if (data.type === 'SELECTION_UPDATED') {
+        const payload = data.payload as { selectedChampion?: Selection }
+        if (payload && payload.selectedChampion) {
+          setSelectedChampion(payload.selectedChampion)
+          setView('idle')
+        }
+      }
+    }
+
+    channel.addEventListener('message', handleMessage)
+
+    return () => {
+      channel.removeEventListener('message', handleMessage)
+      channel.close()
+      broadcastRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
       return
     }
 
-    const previousTitle = document.title
-    document.title = 'Champ Select'
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === STORAGE_KEYS.champions) {
+        try {
+          const parsed = event.newValue ? JSON.parse(event.newValue) : null
+          const next = parseChampionList(parsed)
+          if (next.length) {
+            setChamps(next)
+          }
+        } catch (error) {
+          console.warn('Failed to parse champions update', error)
+        }
+      }
+      if (event.key === STORAGE_KEYS.donationAmount && typeof event.newValue === 'string') {
+        setDonationAmount(event.newValue)
+      }
+      if (event.key === STORAGE_KEYS.selectedChampion) {
+        setSelectedChampion(readStoredSelection(STORAGE_KEYS.selectedChampion))
+        setView('idle')
+      }
+      if (event.key === STORAGE_KEYS.streamlabsUrl) {
+        const nextUrl = typeof event.newValue === 'string' ? event.newValue.trim() : ''
+        setStreamlabsUrl(nextUrl)
+      }
+      if (event.key === STORAGE_KEYS.streamlabsToken) {
+        const nextToken = typeof event.newValue === 'string' ? event.newValue.trim() : ''
+        setStreamlabsToken(nextToken)
+      }
+    }
 
+    window.addEventListener('storage', handleStorage)
     return () => {
-      document.title = previousTitle
+      window.removeEventListener('storage', handleStorage)
     }
   }, [])
-
-  const isMountedRef = useRef(true)
 
   useEffect(() => {
-    isMountedRef.current = true
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    const socketToken = streamlabsToken.trim()
+
+    if (!socketToken) {
+      setSocketConnected(false)
+      if (socketRef.current) {
+        socketRef.current.disconnect()
+        socketRef.current = null
+      }
+      return
+    }
+
+    let cancelled = false
+    let cleanupSocket: (() => void) | null = null
+
+    const startConnection = () => {
+      if (cancelled) {
+        return
+      }
+
+      const socket = io(STREAMLABS_SOCKET_URL, {
+        transports: ['websocket'],
+        query: { token: socketToken },
+      })
+
+      socketRef.current = socket
+
+      const handleConnect = () => setSocketConnected(true)
+      const handleDisconnect = () => setSocketConnected(false)
+      const handleConnectError = (error: Error) => {
+        console.warn('Streamlabs socket connection error', error)
+        handleDisconnect()
+      }
+      const handleDonationMessage = (payload: unknown) => {
+        const amount = extractDonationAmount(payload)
+        if (!amount) {
+          return
+        }
+        const targetAmount = donationAmountRef.current
+        if (targetAmount && amountsEqual(amount, targetAmount)) {
+          setView('picker')
+          setLastEventAt(new Date().toISOString())
+        }
+      }
+
+      const handleStreamlabsEvent = (eventData: unknown) => {
+        if (!eventData || typeof eventData !== 'object') {
+          return
+        }
+
+        const event = eventData as StreamlabsSocketEvent
+        const target = event['for'] ?? 'streamlabs'
+        const { type, message } = event
+
+        if ((!event['for'] || target === 'streamlabs') && type === 'donation') {
+          const payloads: unknown[] = Array.isArray(message)
+            ? message
+            : message !== undefined
+              ? [message]
+              : []
+          if (!payloads.length) {
+            payloads.push(eventData)
+          }
+          payloads.forEach((entry) => {
+            handleDonationMessage(entry)
+          })
+          return
+        }
+
+        if (target === 'twitch_account') {
+          const payloads: unknown[] = Array.isArray(message)
+            ? message
+            : message !== undefined
+              ? [message]
+              : []
+          if (!payloads.length) {
+            payloads.push(eventData)
+          }
+          switch (type) {
+            case 'follow':
+            case 'subscription': {
+              payloads.forEach((entry) => {
+                console.log('Streamlabs event', type, entry)
+              })
+              break
+            }
+            default: {
+              payloads.forEach((entry) => {
+                console.log('Streamlabs event', type, entry)
+              })
+              break
+            }
+          }
+        }
+      }
+
+      socket.on('connect', handleConnect)
+      socket.on('disconnect', handleDisconnect)
+      socket.on('connect_error', handleConnectError)
+      socket.on('error', handleConnectError)
+      socket.on('event', handleStreamlabsEvent)
+
+      cleanupSocket = () => {
+        socket.off('connect', handleConnect)
+        socket.off('disconnect', handleDisconnect)
+        socket.off('connect_error', handleConnectError)
+        socket.off('error', handleConnectError)
+        socket.off('event', handleStreamlabsEvent)
+        socket.disconnect()
+        if (socketRef.current === socket) {
+          socketRef.current = null
+        }
+      }
+    }
+
+    const timeoutId = window.setTimeout(startConnection, 0)
+
     return () => {
-      isMountedRef.current = false
+      cancelled = true
+      window.clearTimeout(timeoutId)
+      if (cleanupSocket) {
+        cleanupSocket()
+      }
+    }
+  }, [streamlabsToken])
+
+  const amountValue = useMemo(() => parseValidAmount(donationAmount), [donationAmount])
+  const amountLabel = amountValue !== null ? formatAmount(amountValue) : ''
+  const hasPrefilledAmount = amountValue !== null
+  const sanitizedStreamlabsUrl = streamlabsUrl.trim()
+  const donationBase = sanitizedStreamlabsUrl || DONATION_URL_BASE
+  const donationUrl = useMemo(() => {
+    if (!hasPrefilledAmount) {
+      return donationBase
+    }
+    const trimmed = donationAmount.trim()
+    return `${donationBase}?amount=${encodeURIComponent(trimmed)}`
+  }, [donationAmount, donationBase, hasPrefilledAmount])
+
+  const handleDonateClick = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+    const url = donationUrl
+    window.open(url, '_blank', 'noopener')
+    setView('waiting')
+  }, [donationUrl])
+
+  const persistSelection = useCallback((selection: Selection) => {
+    if (typeof window === 'undefined') {
+      return
+    }
+    try {
+      window.localStorage.setItem(STORAGE_KEYS.selectedChampion, JSON.stringify(selection))
+    } catch (error) {
+      console.warn('Failed to persist selection', error)
     }
   }, [])
 
-  const loadRoster = useCallback(
-    async ({ showLoading = false }: { showLoading?: boolean } = {}) => {
-      if (showLoading) {
-        setState((prev) => ({ ...prev, loading: true, error: null }))
-      }
+  const broadcastSelection = useCallback((selection: Selection) => {
+    const message = {
+      type: 'SELECTION_UPDATED',
+      payload: { selectedChampion: selection },
+    }
 
-      try {
-        const data = await fetchPublicRoster(ownerId ?? undefined)
-        if (!isMountedRef.current) {
-          return
-        }
-        setState({
-          champions: data.champions.filter((champion) => champion.isActive),
-          donationSettings: data.donationSettings,
-          loading: false,
-          error: null,
-        })
-      } catch (error) {
-        if (!isMountedRef.current) {
-          return
-        }
-        setState({
-          champions: [],
-          donationSettings: null,
-          loading: false,
-          error: error instanceof Error ? error.message : 'Failed to load roster.',
-        })
+    if (broadcastRef.current) {
+      broadcastRef.current.postMessage(message)
+      return
+    }
+
+    if (typeof BroadcastChannel !== 'undefined') {
+      const channel = new BroadcastChannel(CHANNEL_NAME)
+      channel.postMessage(message)
+      channel.close()
+    }
+  }, [])
+
+  const handlePickChampion = useCallback(
+    (champion: Champion) => {
+      const selection: Selection = {
+        id: champion.id,
+        name: champion.name,
+        img: champion.img,
+        selectedAt: new Date().toISOString(),
       }
+      setSelectedChampion(selection)
+      setView('idle')
+      persistSelection(selection)
+      broadcastSelection(selection)
     },
-    [ownerId],
+    [broadcastSelection, persistSelection],
   )
 
-  useEffect(() => {
-    void loadRoster({ showLoading: true })
-  }, [loadRoster])
-
-  useEffect(() => {
-    const socket = getRealtimeSocket()
-    const handleRosterChanged = () => {
-      void loadRoster()
+  const mainContent = useMemo(() => {
+    if (view === 'waiting') {
+      return <WaitingRoom amountLabel={amountLabel} connected={socketConnected} lastEventAt={lastEventAt} />
     }
 
-    socket.on('publicRoster:changed', handleRosterChanged)
-
-    return () => {
-      socket.off('publicRoster:changed', handleRosterChanged)
+    if (view === 'picker') {
+      return (
+        <ChampionGrid
+          champs={champs}
+          mode="pick"
+          onPick={handlePickChampion}
+          selectedChampionId={selectedChampion?.id ?? null}
+        />
+      )
     }
-  }, [loadRoster])
 
-  const donationAmountLabel = useMemo(() => {
-    if (!state.donationSettings?.defaultAmount) {
-      return ''
-    }
-    return formatAmountLabel(state.donationSettings.defaultAmount, state.donationSettings.currency)
-  }, [state.donationSettings])
-
-  const donationUrl = useMemo(() => {
-    const amount = state.donationSettings?.defaultAmount ?? null
-    const amountString = amount != null && Number.isFinite(amount) ? amount.toString() : ''
-    return buildDonationUrl(state.donationSettings, amountString)
-  }, [state.donationSettings])
-
-  const donationButtonLabel = donationAmountLabel ? `Donate ${donationAmountLabel}` : 'Donate'
-  const donationButtonAria = donationAmountLabel ? `Donate ${donationAmountLabel}` : 'Donate to the stream'
-
-  if (state.loading) {
     return (
-      <PublicLayout
-        header={<PublicHeader />}
-        donationBar={
-          <DonationBar
-            amountLabel=""
-            donationUrl={donationUrl}
-            buttonLabel="Donate"
-            buttonAriaLabel="Donate to the stream"
-            hasPrefilledAmount={false}
-            isDisabled
-          />
-        }
-        championList={<Card className={styles.championList}><BodyText tone="muted">Loading roster…</BodyText></Card>}
+      <ChampionGrid
+        champs={champs}
+        mode="view"
+        selectedChampionId={selectedChampion?.id ?? null}
       />
     )
-  }
+  }, [amountLabel, champs, handlePickChampion, lastEventAt, selectedChampion, socketConnected, view])
 
-  if (state.error) {
-    return (
-      <PublicLayout
-        header={<PublicHeader />}
-        donationBar={
-          <DonationBar
-            amountLabel=""
-            donationUrl={donationUrl}
-            buttonLabel="Donate"
-            buttonAriaLabel="Donate to the stream"
-            hasPrefilledAmount={false}
-            isDisabled
-          />
-        }
-        championList={<Card className={styles.championList}><BodyText tone="muted">{state.error}</BodyText></Card>}
-      />
-    )
-  }
+  const selectionBanner = selectedChampion ? <SelectionBanner selection={selectedChampion} /> : undefined
 
   return (
-    <PublicLayout
-      header={<PublicHeader />}
-      donationBar={
-        <DonationBar
-          amountLabel={donationAmountLabel}
-          donationUrl={donationUrl}
-          buttonLabel={donationButtonLabel}
-          buttonAriaLabel={donationButtonAria}
-          hasPrefilledAmount={Boolean(donationAmountLabel)}
-        />
-      }
-      championList={
-        state.champions.length > 0 ? (
-          <ChampionList champs={state.champions} />
-        ) : (
-          <Card className={styles.championList}>
-            <BodyText tone="muted">No champions available yet. Check back soon!</BodyText>
-          </Card>
-        )
-      }
-    />
+    <div className="champ-select-page">
+      <ChampSelectPublicLayout
+        header={<PublicHeader />}
+        selectionBanner={selectionBanner}
+        donationBar={
+          <DonationBar
+            amountLabel={amountLabel}
+            donationUrl={donationUrl}
+            onDonateClick={handleDonateClick}
+            hasPrefilledAmount={hasPrefilledAmount}
+          />
+        }
+        main={mainContent}
+      />
+    </div>
   )
 }
+
+export default ChampSelect
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

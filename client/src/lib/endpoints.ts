@@ -56,6 +56,8 @@ export const fetchPublicRoster = (ownerUserId?: string | number) => {
 
 export const fetchChampions = () => apiFetch<ChampionDto[]>('/champions')
 
+export const fetchChampionCatalog = () => apiFetch<ChampionDto[]>('/champions/catalog')
+
 export const fetchDonationSettings = () => apiFetch<DonationSettingsDto>('/settings/donation')
 
 export const upsertDonationSettings = (payload: Partial<DonationSettingsDto>) =>

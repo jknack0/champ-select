@@ -1,7 +1,10 @@
-﻿import { render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import AdminHeader from './AdminHeader'
 import { describe, expect, it, vi } from 'vitest'
+
+const viewerUrl = 'https://example.com/champ-select?ownerId=1'
+const overlayUrl = 'https://example.com/overlay?ownerId=1'
 
 describe('AdminHeader', () => {
   it('renders the admin title', () => {
@@ -9,29 +12,55 @@ describe('AdminHeader', () => {
     expect(screen.getByRole('heading', { name: 'Champ Select Admin', level: 1 })).toBeInTheDocument()
   })
 
-  it('renders share link controls when a link is provided', async () => {
+  it('renders share link controls and handles copy actions', async () => {
     const user = userEvent.setup()
-    const onCopy = vi.fn()
-    render(<AdminHeader shareLink="https://example.com/champ-select/1" onCopyShareLink={onCopy} />)
+    const onCopyViewer = vi.fn()
+    const onCopyOverlay = vi.fn()
 
-    expect(screen.getByText('Viewer Link')).toBeInTheDocument()
-    const input = screen.getByLabelText(/viewer link/i) as HTMLInputElement
-    expect(input.value).toBe('https://example.com/champ-select/1')
-
-    const button = screen.getByRole('button', { name: /copy link/i })
-    await user.click(button)
-    expect(onCopy).toHaveBeenCalled()
-  })
-
-  it('shows feedback text when copy succeeds', () => {
     render(
       <AdminHeader
-        shareLink="https://example.com/champ-select/1"
-        shareLinkStatus="copied"
-        onCopyShareLink={() => {}}
+        shareLinks={[
+          {
+            label: 'Viewer Link',
+            url: viewerUrl,
+            status: 'idle',
+            onCopy: onCopyViewer,
+          },
+          {
+            label: 'Overlay Link',
+            url: overlayUrl,
+            status: 'idle',
+            onCopy: onCopyOverlay,
+          },
+        ]}
+      />,
+    )
+
+    expect(screen.getByLabelText(/viewer link/i)).toHaveValue(viewerUrl)
+    expect(screen.getByLabelText(/overlay link/i)).toHaveValue(overlayUrl)
+
+    const copyButtons = screen.getAllByRole('button', { name: /copy link/i })
+    await user.click(copyButtons[0])
+    await user.click(copyButtons[1])
+
+    expect(onCopyViewer).toHaveBeenCalled()
+    expect(onCopyOverlay).toHaveBeenCalled()
+  })
+
+  it('shows feedback text when a copy succeeds', () => {
+    render(
+      <AdminHeader
+        shareLinks={[
+          {
+            label: 'Viewer Link',
+            url: viewerUrl,
+            status: 'copied',
+          },
+        ]}
       />,
     )
 
     expect(screen.getByText(/link copied/i)).toBeInTheDocument()
   })
 })
+

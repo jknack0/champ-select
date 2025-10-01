@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "prompt": {
+    "rules": [
+      "Before creating any new UI atom/component, search the codebase for an existing atom that fulfills the need; prefer reuse over duplication. Search typical locations: src/components/atoms, src/components/molecules, src/components/organisms.",
+      "If no suitable atom exists, create a new atom with the standard file set: ComponentName.tsx, ComponentName.module.css, ComponentName.test.tsx, and index.ts that re-exports. Keep the component presentational and stateless when possible.",
+      "Always write minimal unit tests for new atoms using the project's configured test runner (Vitest or Jest) with React Testing Library. At minimum, render without crashing and verify basic semantics (e.g., role/text).",
+      "When given a large prompt for a page, first decompose it using Atomic Design (page → template → organism → molecule → atom). Implement bottom-up: atoms first, then compose molecules/organisms/templates, and finally the page.",
+      "Use CSS Modules for all new styling. Name files *.module.css and import as `import styles from './ComponentName.module.css'`. Prefer BEM-like local class names inside modules (e.g., .root, .title, .button). Avoid global styles and styled-components unless modifying existing code that already uses them.",
+      "Component and file naming: use PascalCase for React components and files (ComponentName.tsx), camelCase for variables and functions, and kebab-case for non-code assets.",
+      "Props: define an explicit TypeScript interface (e.g., `interface ComponentNameProps { ... }`). Avoid `any`. Provide sensible defaults. Keep props minimal and focused.",
+      "Accessibility: ensure interactive elements are keyboard accessible, include appropriate aria-* attributes and roles, and associate labels with inputs.",
+      "State management: prefer composing existing atoms and local component state first. Only introduce new shared state (atoms/store) if multiple consumers require it.",
+      "If a new shared atom/store is required, colocate it in the appropriate layer directory with a matching test file and brief JSDoc describing purpose and usage.",
+      "Imports: prefer existing alias/tsconfig paths (e.g., @atoms, @molecules) when available; otherwise use relative imports. Avoid deep relative chains when an alias exists.",
+      "Testing patterns: use React Testing Library (`render`, `screen`, and user events). Test behavior and accessibility queries, not implementation details.",
+      "Styling patterns: keep styles minimal; prefer utility classes inside the module file rather than inline styles. Do not leak CSS module class names across components.",
+      "Performance: only memoize with React.memo/useMemo/useCallback when there is a demonstrable render hotspot or referential equality requirement.",
+      "Documentation: add a short component-level JSDoc (what it does, required props, and usage constraints). Provide a simple usage example in the component comment if helpful.",
+      "Error boundaries and loading states: for organisms/pages that fetch data, include explicit loading/empty/error UI states. Keep atoms dumb/presentational.",
+      "File structure conventions (default): src/components/atoms, src/components/molecules, src/components/organisms, src/components/templates, src/pages. Place tests next to the component file.",
+      "Commit mindset for generated code: prefer small, focused changes aligned to one atomic layer at a time (atoms → molecules → organisms → templates → pages)."
+    ]
+  }
+}
