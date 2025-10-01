@@ -368,18 +368,16 @@ router.get('/public', async (req, res) => {
 
 
     const donation = await db.get(
-
       `SELECT streamlabs_url, default_amount, currency
-
        FROM donation_settings
-
        WHERE owner_user_id = ?`,
-
       roster.owner_user_id,
-
     )
 
-
+    const credentials = await db.get(
+      `SELECT access_token FROM streamlabs_credentials WHERE owner_user_id = ?`,
+      roster.owner_user_id,
+    )
 
     return res.json({
 
@@ -400,17 +398,12 @@ router.get('/public', async (req, res) => {
       champions: data.champions,
 
       donationSettings: donation
-
         ? {
-
             streamlabsUrl: donation.streamlabs_url,
-
             defaultAmount: donation.default_amount,
-
             currency: donation.currency,
-
+            streamlabsToken: credentials?.access_token ?? null,
           }
-
         : null,
 
     })

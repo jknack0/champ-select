@@ -13,11 +13,7 @@ import {
   amountsEqual,
   extractDonationAmount,
   formatAmount,
-  parseChampionList,
   parseValidAmount,
-  readChampionsFromStorage,
-  readSelectionFromStorage as readStoredSelection,
-  readStringFromStorage,
 } from './utils'
 
 const INITIAL_CHAMPIONS: Champion[] = [
@@ -33,13 +29,6 @@ const INITIAL_CHAMPIONS: Champion[] = [
 
 const DONATION_URL_BASE = 'https://streamlabs.com/<your-channel>/tip'
 const STREAMLABS_SOCKET_URL = 'https://sockets.streamlabs.com'
-const STORAGE_KEYS = {
-  champions: 'champ-select-admin:champions',
-  donationAmount: 'champ-select-admin:donationAmount',
-  selectedChampion: 'champ-select:selectedChampion',
-  streamlabsUrl: 'champ-select-admin:streamlabsUrl',
-  streamlabsToken: 'champ-select-admin:streamlabsToken',
-} as const
 
 const CHANNEL_NAME = 'champ-select:channel'
 
@@ -51,11 +40,11 @@ type StreamlabsSocketEvent = {
 // Page
 
 const ChampSelect = () => {
-  const [champs, setChamps] = useState<Champion[]>(() => readChampionsFromStorage(STORAGE_KEYS.champions, INITIAL_CHAMPIONS))
-  const [donationAmount, setDonationAmount] = useState<string>(() => readStringFromStorage(STORAGE_KEYS.donationAmount))
-  const [streamlabsUrl, setStreamlabsUrl] = useState<string>(() => readStringFromStorage(STORAGE_KEYS.streamlabsUrl))
-  const [streamlabsToken, setStreamlabsToken] = useState<string>(() => readStringFromStorage(STORAGE_KEYS.streamlabsToken))
-  const [selectedChampion, setSelectedChampion] = useState<Selection | null>(() => readStoredSelection(STORAGE_KEYS.selectedChampion))
+  const [champs, setChamps] = useState<Champion[]>(INITIAL_CHAMPIONS)
+  const [donationAmount, setDonationAmount] = useState<string>('')
+  const [streamlabsUrl, setStreamlabsUrl] = useState<string>('')
+  const [streamlabsToken, setStreamlabsToken] = useState<string>('')
+  const [selectedChampion, setSelectedChampion] = useState<Selection | null>(null)
   const [view, setView] = useState<ViewState>('idle')
   const [socketConnected, setSocketConnected] = useState(false)
   const [lastEventAt, setLastEventAt] = useState<string | undefined>(undefined)
@@ -103,42 +92,21 @@ const ChampSelect = () => {
 
         setChamps(nextChamps)
 
-        if (typeof window !== 'undefined') {
-          try {
-            if (nextChamps.length) {
-              window.localStorage.setItem(STORAGE_KEYS.champions, JSON.stringify(nextChamps))
-            } else {
-              window.localStorage.removeItem(STORAGE_KEYS.champions)
-            }
-          } catch (storageError) {
-            console.warn('Failed to persist champions', storageError)
-          }
-        }
-
         const defaultAmount = response.donationSettings?.defaultAmount
         if (typeof defaultAmount === 'number' && Number.isFinite(defaultAmount)) {
           const amountString = defaultAmount.toString()
           setDonationAmount(amountString)
           donationAmountRef.current = amountString
-          if (typeof window !== 'undefined') {
-            try {
-              window.localStorage.setItem(STORAGE_KEYS.donationAmount, amountString)
-            } catch (storageError) {
-              console.warn('Failed to persist donation amount', storageError)
-            }
-          }
         }
 
         const remoteUrl = response.donationSettings?.streamlabsUrl?.trim()
         if (remoteUrl) {
           setStreamlabsUrl(remoteUrl)
-          if (typeof window !== 'undefined') {
-            try {
-              window.localStorage.setItem(STORAGE_KEYS.streamlabsUrl, remoteUrl)
-            } catch (storageError) {
-              console.warn('Failed to persist Streamlabs URL from settings', storageError)
-            }
-          }
+        }
+
+        const remoteToken = response.donationSettings?.streamlabsToken?.trim()
+        if (typeof remoteToken === 'string') {
+          setStreamlabsToken(remoteToken)
         }
       } catch (error) {
         if (!cancelled) {
@@ -183,46 +151,6 @@ const ChampSelect = () => {
       channel.removeEventListener('message', handleMessage)
       channel.close()
       broadcastRef.current = null
-    }
-  }, [])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    const handleStorage = (event: StorageEvent) => {
-      if (event.key === STORAGE_KEYS.champions) {
-        try {
-          const parsed = event.newValue ? JSON.parse(event.newValue) : null
-          const next = parseChampionList(parsed)
-          if (next.length) {
-            setChamps(next)
-          }
-        } catch (error) {
-          console.warn('Failed to parse champions update', error)
-        }
-      }
-      if (event.key === STORAGE_KEYS.donationAmount && typeof event.newValue === 'string') {
-        setDonationAmount(event.newValue)
-      }
-      if (event.key === STORAGE_KEYS.selectedChampion) {
-        setSelectedChampion(readStoredSelection(STORAGE_KEYS.selectedChampion))
-        setView('idle')
-      }
-      if (event.key === STORAGE_KEYS.streamlabsUrl) {
-        const nextUrl = typeof event.newValue === 'string' ? event.newValue.trim() : ''
-        setStreamlabsUrl(nextUrl)
-      }
-      if (event.key === STORAGE_KEYS.streamlabsToken) {
-        const nextToken = typeof event.newValue === 'string' ? event.newValue.trim() : ''
-        setStreamlabsToken(nextToken)
-      }
-    }
-
-    window.addEventListener('storage', handleStorage)
-    return () => {
-      window.removeEventListener('storage', handleStorage)
     }
   }, [])
 
@@ -378,17 +306,6 @@ const ChampSelect = () => {
     setView('waiting')
   }, [donationUrl])
 
-  const persistSelection = useCallback((selection: Selection) => {
-    if (typeof window === 'undefined') {
-      return
-    }
-    try {
-      window.localStorage.setItem(STORAGE_KEYS.selectedChampion, JSON.stringify(selection))
-    } catch (error) {
-      console.warn('Failed to persist selection', error)
-    }
-  }, [])
-
   const broadcastSelection = useCallback((selection: Selection) => {
     const message = {
       type: 'SELECTION_UPDATED',
@@ -417,10 +334,9 @@ const ChampSelect = () => {
       }
       setSelectedChampion(selection)
       setView('idle')
-      persistSelection(selection)
       broadcastSelection(selection)
     },
-    [broadcastSelection, persistSelection],
+    [broadcastSelection],
   )
 
   const mainContent = useMemo(() => {

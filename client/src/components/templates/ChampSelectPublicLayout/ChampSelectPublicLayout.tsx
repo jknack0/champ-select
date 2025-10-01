@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import styles from './ChampSelectPublicLayout.module.css'
 
 type ChampSelectPublicLayoutProps = {
   header: ReactNode
@@ -9,8 +10,8 @@ type ChampSelectPublicLayoutProps = {
 
 const ChampSelectPublicLayout = ({ header, donationBar, main, selectionBanner }: ChampSelectPublicLayoutProps) => {
   return (
-    <div className="champ-select-container">
-      <div className="layout-stack">
+    <div className={styles.container}>
+      <div className={styles.stack}>
         {header}
         {selectionBanner ?? null}
         {donationBar}

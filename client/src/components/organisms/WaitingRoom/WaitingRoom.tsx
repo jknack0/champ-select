@@ -4,6 +4,7 @@ import Heading from '../../atoms/Heading'
 import SelectBadge from '../../atoms/SelectBadge'
 import SelectSpinner from '../../atoms/SelectSpinner'
 import SelectText from '../../atoms/SelectText'
+import styles from './WaitingRoom.module.css'
 
 type WaitingRoomProps = {
   amountLabel: string
@@ -25,13 +26,13 @@ const WaitingRoom = ({ amountLabel, connected, lastEventAt }: WaitingRoomProps) 
 
   return (
     <Card>
-      <div className="waiting-room" aria-live="polite">
+      <div className={styles.container} aria-live="polite">
         <SelectSpinner />
-        <Heading level={3}>Waiting for a matching donation…</Heading>
+        <Heading level={3}>Waiting for a matching donation.</Heading>
         <SelectText tone="muted">
-          {amountLabel ? `We will unlock the picker as soon as a ${amountLabel} donation arrives.` : 'Keep the Streamlabs tab open—any eligible donation will unlock the picker.'}
+          {amountLabel ? `We will unlock the picker as soon as a ${amountLabel} donation arrives.` : 'Keep the Streamlabs tab open-any eligible donation will unlock the picker.'}
         </SelectText>
-        <div className="waiting-room-meta">
+        <div className={styles.meta}>
           <SelectBadge tone={connected ? 'success' : 'warning'}>
             {connected ? 'Socket Connected' : 'Socket Disconnected'}
           </SelectBadge>
@@ -43,4 +44,3 @@ const WaitingRoom = ({ amountLabel, connected, lastEventAt }: WaitingRoomProps) 
 }
 
 export default WaitingRoom
-

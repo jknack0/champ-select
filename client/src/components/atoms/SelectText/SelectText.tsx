@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import classNames from '../../../lib/classNames'
+import styles from './SelectText.module.css'
 
 type SelectTextProps = {
   children: ReactNode
@@ -9,7 +10,8 @@ type SelectTextProps = {
 }
 
 const SelectText = ({ children, as: Component = 'p', tone = 'default', className }: SelectTextProps) => {
-  return <Component className={classNames('text', tone === 'muted' && 'text-muted', className)}>{children}</Component>
+  const toneClass = tone === 'muted' ? styles.muted : undefined
+  return <Component className={classNames(styles.text, toneClass, className)}>{children}</Component>
 }
 
 export default SelectText

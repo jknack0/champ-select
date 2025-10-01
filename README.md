@@ -1,6 +1,6 @@
 # Champ Select
 
-Champ Select is a React + TypeScript application that powers a shareable champion showcase, an authenticated admin workspace, and utilities for stream overlays. The UI follows an Atomic Design component library, persists lightweight state with `localStorage`, and ships with robust Vitest coverage.
+Champ Select is a React + TypeScript application that powers a shareable champion showcase, an authenticated admin workspace, and utilities for stream overlays. The UI follows an Atomic Design component library, fetches state directly from the backend, and ships with robust Vitest coverage.
 
 ## Highlights
 
@@ -59,26 +59,15 @@ npm install
 | `npm run test:run --prefix client` | Runs the Vitest suite once. |
 | `npm run build --prefix client` | Type-checks and builds the client bundle with Vite. |
 
-## Local Storage Contract
-
-The application relies on a handful of consistent keys. Tests mock the same keys to guarantee behavioral parity.
-
-| Key | Consumers | Purpose |
-|-----|-----------|---------|
-| `champ-select-admin:champions` | Admin & public Champ Select pages | JSON array of champion objects. Falls back to an internal seed list when missing or invalid. |
-| `champ-select-admin:donationAmount` | Admin & public Champ Select pages | Donation amount (string). Valid, non-negative numbers prefill the Streamlabs donation link. |
-| `champ-select-admin:streamlabsUrl` | Settings page | Base Streamlabs tip URL saved by admins. |
-| `champ-select-admin:streamlabsToken` | Settings page | Streamlabs API token/secret saved by admins. |
-
 ## Core Flows
 
 ### Public Champ Select
 - Renders a vertical champion list with avatars, names, and IDs inside a shared `Card`.
-- Donation button links to `https://streamlabs.com/<your-channel>/tip`. When a valid amount is present in localStorage, the link appends `?amount=<value>` and the button label becomes `Donate $xx.xx`.
+- Donation button links to `https://streamlabs.com/<your-channel>/tip`. When a valid amount is provided by the API, the link appends `?amount=<value>` and the button label becomes `Donate $xx.xx`.
 
 ### Champ Select Admin (Protected)
 - Drag-and-drop powered by `@hello-pangea/dnd` for reordering.
-- Remove champions inline; updates persist to `localStorage`.
+- Remove champions inline; updates persist to the backend.
 - Donation controls validate numeric input before saving.
 
 ### Settings (Protected)
@@ -130,7 +119,7 @@ Guidelines:
 |---------|-----|
 | CSS selectors missing in tests | Import the related CSS module in your test so hashed class names resolve (see `UserBadge.test.tsx`). |
 | Donation button ignores amount | Ensure `champ-select-admin:donationAmount` contains a parseable non-negative number; invalid strings are gracefully ignored. |
-| `window.open` or `localStorage` errors during tests | Mock the APIs (Vitest examples in `ChampSelect.test.tsx` and `Settings.test.tsx`). |
+| `window.open` errors during tests | Mock the APIs (Vitest examples in `ChampSelect.test.tsx` and `Settings.test.tsx`). |
 
 ## License
 

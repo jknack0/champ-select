@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import classNames from '../../../lib/classNames'
+import styles from './SelectBadge.module.css'
 
 type SelectBadgeProps = {
   children: ReactNode
@@ -8,7 +9,8 @@ type SelectBadgeProps = {
 }
 
 const SelectBadge = ({ children, tone = 'default', className }: SelectBadgeProps) => {
-  return <span className={classNames('badge', `badge-${tone}`, className)}>{children}</span>
+  const toneClass = styles[tone] ?? styles.default
+  return <span className={classNames(styles.badge, toneClass, className)}>{children}</span>
 }
 
 export default SelectBadge

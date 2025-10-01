@@ -1,1 +1,1 @@
-export { default } from './SelectSpinner'\r\n
+export { default } from './SelectSpinner'

@@ -3,6 +3,7 @@ import Card from '../../atoms/Card'
 import Heading from '../../atoms/Heading'
 import SelectBadge from '../../atoms/SelectBadge'
 import SelectText from '../../atoms/SelectText'
+import styles from './DonationBar.module.css'
 
 type DonationBarProps = {
   amountLabel: string
@@ -15,8 +16,8 @@ const DonationBar = ({ amountLabel, donationUrl, onDonateClick, hasPrefilledAmou
   const ariaLabel = hasPrefilledAmount && amountLabel ? `Donate ${amountLabel}` : 'Donate'
 
   return (
-    <Card className="donation-bar">
-      <div className="donation-bar-content">
+    <Card className={styles.donationBar}>
+      <div className={styles.content}>
         <Heading level={2}>Support the stream</Heading>
         <SelectText tone="muted">
           {hasPrefilledAmount && amountLabel
@@ -24,12 +25,8 @@ const DonationBar = ({ amountLabel, donationUrl, onDonateClick, hasPrefilledAmou
             : 'Open the donation page in a new tab. Matching donations unlock the champion picker.'}
         </SelectText>
       </div>
-      <div className="donation-actions">
-        <Button
-          variant="solid"
-          ariaLabel={ariaLabel}
-          onClick={onDonateClick}
-        >
+      <div className={styles.actions}>
+        <Button variant="solid" ariaLabel={ariaLabel} onClick={onDonateClick}>
           Donate
         </Button>
         {hasPrefilledAmount ? <SelectBadge tone="info">Prefilled {amountLabel}</SelectBadge> : null}
@@ -45,4 +42,3 @@ const DonationBar = ({ amountLabel, donationUrl, onDonateClick, hasPrefilledAmou
 }
 
 export default DonationBar
-

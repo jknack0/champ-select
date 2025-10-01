@@ -1,9 +1,7 @@
-﻿export { default as DonationControls } from './DonationControls'
+export { default as DonationControls } from './DonationControls'
 export { default as ChampionRow } from './ChampionRow'
-
-export { default as FormField } from './FormField';
-export { default as AuthActions } from './AuthActions';
-
-
-export { default as Popover } from './Popover';
-
+export { default as DonationBar } from './DonationBar'
+export { default as ChampionCard } from './ChampionCard'
+export { default as FormField } from './FormField'
+export { default as AuthActions } from './AuthActions'
+export { default as Popover } from './Popover'

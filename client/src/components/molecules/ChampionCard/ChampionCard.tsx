@@ -3,6 +3,7 @@ import Avatar from '../../atoms/Avatar'
 import Card from '../../atoms/Card'
 import SelectBadge from '../../atoms/SelectBadge'
 import classNames from '../../../lib/classNames'
+import styles from './ChampionCard.module.css'
 
 type ChampionCardProps = {
   champ: Champion
@@ -13,12 +14,12 @@ type ChampionCardProps = {
 const ChampionCard = ({ champ, onPick, isSelected = false }: ChampionCardProps) => {
   const content = (
     <>
-      <div className="champion-card-header">
+      <div className={styles.cardHeader}>
         <Avatar name={champ.name} src={champ.img} />
-        <span className="champion-card-name">{champ.name}</span>
+        <span className={styles.championName}>{champ.name}</span>
       </div>
       {isSelected ? (
-        <div className="champion-card-footer">
+        <div className={styles.cardFooter}>
           <SelectBadge tone="success">Selected</SelectBadge>
         </div>
       ) : null}
@@ -27,25 +28,24 @@ const ChampionCard = ({ champ, onPick, isSelected = false }: ChampionCardProps) 
 
   if (onPick) {
     return (
-      <Card className={classNames('champion-card', 'clickable', isSelected && 'selected')}>
+      <Card className={classNames(styles.card, styles.clickable, isSelected && styles.selected)}>
         <button
           type="button"
-          className="champion-card-action"
+          className={styles.actionButton}
           onClick={() => onPick(champ)}
           aria-pressed={isSelected}
         >
-          {content}
+          <div className={styles.cardBody}>{content}</div>
         </button>
       </Card>
     )
   }
 
   return (
-    <Card className={classNames('champion-card', isSelected && 'selected')}>
-      <div className="champion-card-body">{content}</div>
+    <Card className={classNames(styles.card, isSelected && styles.selected)}>
+      <div className={styles.cardBody}>{content}</div>
     </Card>
   )
 }
 
 export default ChampionCard
-

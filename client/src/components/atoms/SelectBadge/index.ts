@@ -1,1 +1,1 @@
-export { default } from './SelectBadge'\r\n
+export { default } from './SelectBadge'

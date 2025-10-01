@@ -1,4 +1,4 @@
-import type { Champion, Selection } from './types'
+import type { Champion } from './types'
 
 export const parseValidAmount = (raw: string): number | null => {
   if (typeof raw !== 'string') {
@@ -65,63 +65,6 @@ export const parseChampionList = (value: unknown): Champion[] => {
   })
 
   return list
-}
-
-export const readChampionsFromStorage = (storageKey: string, fallback: Champion[]): Champion[] => {
-  if (typeof window === 'undefined') {
-    return fallback
-  }
-  try {
-    const raw = window.localStorage.getItem(storageKey)
-    if (!raw) {
-      return fallback
-    }
-    const parsed = JSON.parse(raw)
-    const champions = parseChampionList(parsed)
-    return champions.length ? champions : fallback
-  } catch (error) {
-    console.warn('Failed to read champions from storage', error)
-    return fallback
-  }
-}
-
-export const readStringFromStorage = (storageKey: string): string => {
-  if (typeof window === 'undefined') {
-    return ''
-  }
-  try {
-    const stored = window.localStorage.getItem(storageKey)
-    return typeof stored === 'string' ? stored : ''
-  } catch (error) {
-    console.warn(`Failed to read ${storageKey} from storage`, error)
-    return ''
-  }
-}
-
-export const readSelectionFromStorage = (storageKey: string): Selection | null => {
-  if (typeof window === 'undefined') {
-    return null
-  }
-  try {
-    const raw = window.localStorage.getItem(storageKey)
-    if (!raw) {
-      return null
-    }
-    const parsed = JSON.parse(raw)
-    if (parsed && typeof parsed === 'object') {
-      const id = typeof parsed.id === 'string' ? parsed.id : null
-      const name = typeof parsed.name === 'string' ? parsed.name : null
-      const img = typeof parsed.img === 'string' ? parsed.img : ''
-      const selectedAt = typeof parsed.selectedAt === 'string' ? parsed.selectedAt : new Date().toISOString()
-      if (id && name) {
-        return { id, name, img, selectedAt }
-      }
-    }
-    return null
-  } catch (error) {
-    console.warn('Failed to read selected champion from storage', error)
-    return null
-  }
 }
 
 export const extractDonationAmount = (payload: unknown): string | null => {

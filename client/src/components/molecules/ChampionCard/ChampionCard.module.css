@@ -1,0 +1,64 @@
+.card {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+}
+
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: center;
+}
+
+.championName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  text-align: center;
+}
+
+.actionButton {
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0;
+}
+
+.actionButton:hover {
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.actionButton:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.clickable {
+  border-color: #cbd5f5;
+}
+
+.selected {
+  border-color: #2563eb;
+  box-shadow: 0 12px 32px rgba(37, 99, 235, 0.15);
+}

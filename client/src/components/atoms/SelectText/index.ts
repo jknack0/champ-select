@@ -1,1 +1,1 @@
-export { default } from './SelectText'\r\n
+export { default } from './SelectText'

@@ -12,11 +12,6 @@ import {
   type StreamlabsStatusDto,
 } from '../../../lib/endpoints'
 
-const STORAGE_KEYS = {
-  streamlabsUrl: 'champ-select-admin:streamlabsUrl',
-  streamlabsToken: 'champ-select-admin:streamlabsToken',
-} as const
-
 
 type TouchedState = {
   url?: boolean
@@ -48,17 +43,7 @@ const validateToken = (value: string): string | undefined => {
 }
 
 const Settings = () => {
-  const [streamlabsUrl, setStreamlabsUrl] = useState(() => {
-    if (typeof window === 'undefined') {
-      return ''
-    }
-    try {
-      return window.localStorage.getItem(STORAGE_KEYS.streamlabsUrl) ?? ''
-    } catch (error) {
-      console.warn('Failed to read Streamlabs URL from storage', error)
-      return ''
-    }
-  })
+  const [streamlabsUrl, setStreamlabsUrl] = useState('')
   const [streamlabsToken, setStreamlabsToken] = useState('')
   const [touched, setTouched] = useState<TouchedState>({})
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
@@ -84,17 +69,6 @@ const Settings = () => {
           setDonationSettings(donation)
           const nextUrl = typeof donation.streamlabsUrl === 'string' ? donation.streamlabsUrl.trim() : ''
           setStreamlabsUrl(nextUrl)
-          if (typeof window !== 'undefined') {
-            try {
-              if (nextUrl) {
-                window.localStorage.setItem(STORAGE_KEYS.streamlabsUrl, nextUrl)
-              } else {
-                window.localStorage.removeItem(STORAGE_KEYS.streamlabsUrl)
-              }
-            } catch (error) {
-              console.warn('Failed to persist Streamlabs URL to storage', error)
-            }
-          }
         }
         if (creds) {
           setStreamlabsStatus(creds)
@@ -162,28 +136,6 @@ const Settings = () => {
 
       const nextUrl = typeof updatedDonation.streamlabsUrl === 'string' ? updatedDonation.streamlabsUrl.trim() : trimmedUrl
       setStreamlabsUrl(nextUrl)
-
-      if (typeof window !== 'undefined') {
-        try {
-          if (nextUrl) {
-            window.localStorage.setItem(STORAGE_KEYS.streamlabsUrl, nextUrl)
-          } else {
-            window.localStorage.removeItem(STORAGE_KEYS.streamlabsUrl)
-          }
-        } catch (storageError) {
-          console.warn('Failed to persist Streamlabs URL to storage', storageError)
-        }
-        try {
-          if (trimmedToken) {
-            window.localStorage.setItem(STORAGE_KEYS.streamlabsToken, trimmedToken)
-          } else {
-            window.localStorage.removeItem(STORAGE_KEYS.streamlabsToken)
-          }
-        } catch (storageError) {
-          console.warn('Failed to persist Streamlabs token to storage', storageError)
-        }
-      }
-
       setStreamlabsToken('')
       setTouched((prev) => ({ ...prev, token: false }))
       setStatus('saved')
@@ -196,13 +148,6 @@ const Settings = () => {
   const handleRemoveCredentials = async () => {
     try {
       await deleteStreamlabsCredentials()
-      if (typeof window !== 'undefined') {
-        try {
-          window.localStorage.removeItem(STORAGE_KEYS.streamlabsToken)
-        } catch (storageError) {
-          console.warn('Failed to remove Streamlabs token from storage', storageError)
-        }
-      }
       setStreamlabsToken('')
       setTouched((prev) => ({ ...prev, token: false }))
       setStreamlabsStatus({ hasCredentials: false, tokenExpiresAt: null })

@@ -3,6 +3,7 @@ import Card from '../../atoms/Card'
 import Heading from '../../atoms/Heading'
 import SelectText from '../../atoms/SelectText'
 import ChampionCard from '../../molecules/ChampionCard/ChampionCard'
+import styles from './ChampionGrid.module.css'
 
 type ChampionGridProps = {
   champs: Champion[]
@@ -14,15 +15,15 @@ type ChampionGridProps = {
 const ChampionGrid = ({ champs, mode, onPick, selectedChampionId }: ChampionGridProps) => {
   if (!champs.length) {
     return (
-      <Card className="empty-state">
+      <Card className={styles.emptyState}>
         <Heading level={3}>No champions available</Heading>
-        <SelectText tone="muted">Check back soon—your streamer has not published a roster yet.</SelectText>
+        <SelectText tone="muted">Check back soon-your streamer has not published a roster yet.</SelectText>
       </Card>
     )
   }
 
   return (
-    <div className="champion-grid">
+    <div className={styles.grid}>
       {champs.map((champion) => (
         <ChampionCard
           key={champion.id}
@@ -36,5 +37,3 @@ const ChampionGrid = ({ champs, mode, onPick, selectedChampionId }: ChampionGrid
 }
 
 export default ChampionGrid
-
-

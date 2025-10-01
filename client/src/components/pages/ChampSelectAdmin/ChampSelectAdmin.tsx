@@ -603,8 +603,8 @@ const ChampSelectAdmin = () => {
         </Button>
       </div>
       {catalogLoading ? <p className={styles.state}>Loading champion catalog...</p> : null}
-      {catalogError ? <InlineError>{catalogError}</InlineError> : null}
-      {addChampionError ? <InlineError>{addChampionError}</InlineError> : null}
+      {catalogError ? <InlineError id="catalog-error">{catalogError}</InlineError> : null}
+      {addChampionError ? <InlineError id="add-champion-error">{addChampionError}</InlineError> : null}
       {!catalogLoading && !catalogError && availableChampions.length === 0 ? (
         <p className={styles.state}>Every champion in the catalog is already on this roster.</p>
       ) : null}

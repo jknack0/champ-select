@@ -25,6 +25,7 @@ export type PublicRosterResponse = {
     streamlabsUrl: string | null
     defaultAmount: number | null
     currency: string
+    streamlabsToken: string | null
   } | null
 }
 
